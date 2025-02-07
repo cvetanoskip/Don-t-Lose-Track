@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="login">#00E2FF</color>
+    <color name="Recommended">#FF9C9C9C</color>
+    <color name="light_white">#E8E8E8</color>
+    <color name="primary_background_color">#FAD100</color>
+    <color name="transparent">#00000000</color>
+    <color name="red1">#FF0000</color>
+    <color name="Dashboardbackground">#37418A</color>
+    <color name="SearchBar">#151C4A</color>
+    <color name="NavigationBarbackground">@color/ic_launcher_background</color>
+</resources>

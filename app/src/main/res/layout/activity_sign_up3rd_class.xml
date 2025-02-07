@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FAD100"
+    tools:context=".LoginSignup.SignUp3rdClass"
+
+
+    >
+
+    <LinearLayout
+        android:padding="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <ImageView
+            android:clickable="true"
+            android:id="@+id/signup_back_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:src="@drawable/general_back_icon"
+            android:transitionName="transition_back_arrow_btn"/>
+
+        <TextView
+            android:id="@+id/signup_title_text"
+            android:layout_width="192dp"
+            android:layout_height="133dp"
+            android:layout_marginTop="20dp"
+            android:fontFamily="@font/anton"
+            android:text="Create Account"
+            android:textAllCaps="true"
+            android:textColor="@color/black"
+            android:textSize="40sp"
+            android:transitionName="transition_title_text"/>
+        <TextView
+            android:id="@+id/Verification_survey"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:fontFamily="@font/anton"
+            android:text="Do you want to set up phone verification?"
+            android:textAllCaps="true"
+            android:textColor="@color/black"
+            android:textSize="15sp"
+            android:transitionName="transition_title_text"/>
+        <RadioGroup
+            android:id="@+id/radio_phone_verification"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp">
+        <RadioButton
+            android:id="@+id/verify_phone_yes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Yes"
+            android:fontFamily="@font/roboto"/>
+            <RadioButton
+                android:id="@+id/verify_phone_no"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No"
+                android:fontFamily="@font/roboto"/>
+
+        </RadioGroup>
+        <LinearLayout
+            android:id="@+id/Insert_phone_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="40dp"
+            >
+            <com.hbb20.CountryCodePicker
+                android:id="@+id/country"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:ccp_autoDetectCountry="true"
+                app:ccp_showFlag="true"
+                app:ccp_showNameCode="true"
+                app:ccp_showFullName="true"
+                android:padding="5dp"
+                android:background="@drawable/black_border"/>
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/Phone_number_layout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/enter_phone_number"
+                app:hintTextColor="@color/black"
+                android:textColorHint="@color/black"
+                app:boxStrokeColor="@color/black"
+                app:boxStrokeWidthFocused="2dp"
+                app:endIconMode="clear_text"
+                app:endIconTint="@color/black"
+                app:startIconDrawable="@drawable/phonenumber_icon"
+                app:startIconTint="@color/black"
+                app:errorTextColor="@color/red1"
+                app:boxStrokeErrorColor="@color/red1"
+                app:errorIconTint="@color/red1"
+                >
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/insert_phone"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:fontFamily="@font/anton"
+                    android:inputType="phone"
+                    android:textColor="@color/black" />
+
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/signup_next_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/next_btn"
+            android:backgroundTint="@color/black"
+            android:textColor="@color/white"
+            android:layout_marginTop="20dp"
+            android:elevation="5dp"
+            android:transitionName="transition_next_btn" />
+
+        <Button
+            android:id="@+id/signup_login_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/login_btn_string"
+            android:backgroundTint="#00000000"
+            android:textColor="@color/black"
+            android:layout_marginTop="20dp"
+            android:elevation="5dp"
+            android:transitionName="transition_login_btn"/>
+
+
+    </LinearLayout>
+
+
+</ScrollView>

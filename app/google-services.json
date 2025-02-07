@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "356975472657",
+    "project_id": "caloriecounter-34290",
+    "storage_bucket": "caloriecounter-34290.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:356975472657:android:133cd485501abdc18d41b0",
+        "android_client_info": {
+          "package_name": "com.example.caloriecounter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAcLr9MxCensG46Ucw3ZndCEszw1ae21x4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/Dashboardbackground"
+    android:paddingBottom="30dp"
+    android:fitsSystemWindows="true"
+    >
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/Dashboardbackground"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Back Button -->
+    <ImageButton
+        android:id="@+id/back_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:padding="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:contentDescription="Back Button"
+        android:backgroundTint="@color/Dashboardbackground"
+        android:src="@drawable/general_back_icon" />
+
+
+
+    <!-- Title Text -->
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set Calorie Goal"
+        android:fontFamily="@font/roboto"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:padding="16dp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/back_button"
+        app:layout_constraintStart_toStartOf="parent"
+         />
+
+    <!-- Calorie Goal EditText -->
+    <EditText
+        android:id="@+id/calorie_goal_input"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Enter Calorie Goal"
+        android:fontFamily="@font/roboto"
+        android:inputType="number"
+        android:padding="16dp"
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@id/title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+         />
+    <Button
+        android:id="@+id/set_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set"
+        android:textSize="20sp"
+        android:fontFamily="@font/roboto"
+        android:onClick="saveCalorieGoal"
+        app:layout_constraintTop_toBottomOf="@id/calorie_goal_input"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="32dp"
+        />
+    <Button
+        android:id="@+id/set_ratio_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set"
+
+        android:textSize="20sp"
+        android:fontFamily="@font/roboto"
+        android:onClick="saveCalorieGoal"
+        app:layout_constraintTop_toBottomOf="@id/fatgram"
+        app:layout_constraintBottom_toTopOf="@id/protein_total"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="32dp"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/ratio"
+        android:text="Goal Ratio"
+        android:textColor="@color/white"
+        android:fontFamily="@font/roboto"
+        android:textSize="20sp"
+        app:layout_constraintTop_toBottomOf="@id/set_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/proteinRatio"
+        android:text="Protein: "
+        android:textColor="@color/white"
+        android:fontFamily="@font/roboto"
+        android:textSize="20sp"
+        android:padding="20dp"
+        app:layout_constraintTop_toBottomOf="@id/ratio"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/proteinPercentage"/>
+    <EditText
+            android:id="@+id/proteinPercentage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:padding="20dp"
+            android:hint="0%"
+        android:inputType="numberDecimal"
+            app:layout_constraintTop_toBottomOf="@id/ratio"
+            app:layout_constraintBottom_toTopOf="@id/carbRatio"
+        app:layout_constraintStart_toStartOf="@id/proteinRatio"
+            app:layout_constraintEnd_toEndOf="parent"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/proteingram"
+        android:text="0g "
+        android:textColor="@color/white"
+        android:fontFamily="@font/roboto"
+        android:textSize="20sp"
+        android:padding="20dp"
+        app:layout_constraintTop_toBottomOf="@id/ratio"
+        app:layout_constraintStart_toStartOf="@id/proteinPercentage"
+        app:layout_constraintEnd_toEndOf="parent"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/carbRatio"
+        android:text="Carbs: "
+        android:textColor="@color/white"
+        android:fontFamily="@font/roboto"
+        android:textSize="20sp"
+        android:padding="20dp"
+        app:layout_constraintTop_toBottomOf="@id/proteinRatio"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/carbPercentage"/>
+    <EditText
+        android:id="@+id/carbPercentage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal"
+        android:textSize="20sp"
+        android:padding="20dp"
+        android:hint="0%"
+        app:layout_constraintTop_toBottomOf="@id/proteinRatio"
+        app:layout_constraintBottom_toTopOf="@id/fatPercentage"
+        app:layout_constraintStart_toStartOf="@id/carbRatio"
+        app:layout_constraintEnd_toEndOf="parent"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/carbgram"
+        android:text="0g "
+        android:textColor="@color/white"
+        android:fontFamily="@font/roboto"
+        android:textSize="20sp"
+        android:padding="20dp"
+        app:layout_constraintTop_toBottomOf="@id/proteinRatio"
+        app:layout_constraintStart_toStartOf="@id/carbPercentage"
+        app:layout_constraintEnd_toEndOf="parent"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/fatRatio"
+        android:text="Fats: "
+        android:textColor="@color/white"
+        android:fontFamily="@font/roboto"
+        android:textSize="20sp"
+        android:padding="20dp"
+        app:layout_constraintTop_toBottomOf="@id/carbRatio"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/carbPercentage"/>
+    <EditText
+        android:id="@+id/fatPercentage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:inputType="numberDecimal"
+        android:padding="20dp"
+        android:hint="0%"
+
+        app:layout_constraintTop_toBottomOf="@id/carbRatio"
+
+        app:layout_constraintStart_toStartOf="@id/fatRatio"
+        app:layout_constraintEnd_toEndOf="parent"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/fatgram"
+        android:text="0g "
+        android:textColor="@color/white"
+        android:fontFamily="@font/roboto"
+        android:textSize="20sp"
+        android:padding="20dp"
+        app:layout_constraintTop_toBottomOf="@id/carbRatio"
+        app:layout_constraintStart_toStartOf="@id/fatPercentage"
+        app:layout_constraintEnd_toEndOf="parent"/>
+    <TextView
+        android:id="@+id/protein_total"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:text="Total Protein: 0g"
+        android:textSize="20sp"
+        android:fontFamily="@font/roboto"
+        android:textColor="@color/white"
+        app:layout_constraintTop_toBottomOf="@id/set_ratio_button"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp" />
+
+    <TextView
+        android:id="@+id/carbs_total"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Total Carbs: 0g"
+        android:layout_marginLeft="10dp"
+        android:textSize="20sp"
+        android:fontFamily="@font/roboto"
+        android:textColor="@color/white"
+        app:layout_constraintTop_toBottomOf="@id/protein_total"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="8dp" />
+
+    <TextView
+        android:id="@+id/fats_total"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:text="Total Fats: 0g"
+        android:textSize="20sp"
+        android:fontFamily="@font/roboto"
+        android:textColor="@color/white"
+        app:layout_constraintTop_toBottomOf="@id/carbs_total"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="8dp"/>
+    <TextView
+        android:id="@+id/calories_total"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Total Calories: 0"
+        android:textSize="25sp"
+        android:layout_marginLeft="10dp"
+        android:fontFamily="@font/roboto"
+        android:textColor="@color/white"
+        app:layout_constraintTop_toBottomOf="@id/fats_total"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="8dp"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

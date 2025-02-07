@@ -1,0 +1,63 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/Dashboardbackground"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:ignore="ExtraText">
+
+    <!-- ImageButton in the top left corner -->
+    <ImageButton
+        android:id="@+id/back_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/general_back_icon"
+        android:background="@color/transparent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_margin="16dp"/> <!-- Change this to your desired image -->
+
+
+    <!-- ProgressBar in the center -->
+    <ProgressBar
+        android:id="@+id/circularProgressBar"
+        style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:max="10000"
+        android:progress="0"
+        android:indeterminateOnly="false"
+        android:progressDrawable="@drawable/circular_progress"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- TextView to display step count -->
+    <TextView
+        android:id="@+id/stepCountText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0 Steps"
+        android:textSize="24sp"
+        android:fontFamily="@font/roboto"
+        android:textColor="@android:color/white"
+        app:layout_constraintTop_toTopOf="@id/circularProgressBar"
+        app:layout_constraintBottom_toBottomOf="@id/circularProgressBar"
+        app:layout_constraintStart_toStartOf="@id/circularProgressBar"
+        app:layout_constraintEnd_toEndOf="@id/circularProgressBar" />
+
+    <!-- Reset Button below the ProgressBar -->
+    <Button
+        android:id="@+id/resetButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reset Steps"
+        android:backgroundTint="@color/SearchBar"
+        android:textColor="@color/white"
+        app:layout_constraintTop_toBottomOf="@id/circularProgressBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="20dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

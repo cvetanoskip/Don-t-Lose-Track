@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/protein_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Protein (grams)"
+        android:inputType="numberDecimal" />
+
+    <EditText
+        android:id="@+id/carbs_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Carbohydrates (grams)"
+        android:inputType="numberDecimal" />
+
+    <EditText
+        android:id="@+id/fats_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Fats (grams)"
+        android:inputType="numberDecimal" />
+    <EditText
+        android:id="@+id/serving_size_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter Serving Size"
+        android:inputType="numberDecimal"
+        android:layout_marginTop="16dp"
+        android:padding="8dp" />
+
+    <Button
+        android:id="@+id/btn_add_macros"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add Macros" />
+
+</LinearLayout>

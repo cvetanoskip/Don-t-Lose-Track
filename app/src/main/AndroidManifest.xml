@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.caloriecounter">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
+
+    <application
+        android:name=".MyApp"
+        android:allowBackup="true"
+
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.CalorieCounter"
+        tools:targetApi="31">
+
+        <activity android:name=".User.StepTrackerActivity"
+            android:theme="@style/Theme.CalorieCounter"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:windowSoftInputMode="adjustPan"
+            android:exported="false"/>
+        <activity
+            android:name=".User.UserDashboard"
+            android:theme="@style/Theme.CalorieCounter"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:windowSoftInputMode="adjustPan"
+            android:exported="false" />
+        <activity android:name=".User.MenuActivity"
+            android:theme="@style/Theme.CalorieCounter"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:windowSoftInputMode="adjustPan"
+            android:exported="false"
+            tools:ignore="Instantiatable" />
+        <activity
+            android:name=".LoginSignup.ForgetPasswordSuccessMessage"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="false"
+            android:theme="@style/Theme.LoginSignup" />
+        <activity
+            android:name=".LoginSignup.SetNewPassword"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan"
+            android:theme="@style/Theme.LoginSignup" />
+        <activity
+            android:name=".LoginSignup.MakeSelection"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan"
+            android:theme="@style/Theme.LoginSignup" />
+        <activity
+            android:name=".LoginSignup.ForgetPassword"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan"
+            android:theme="@style/Theme.LoginSignup" />
+        <activity
+            android:name=".LoginSignup.VerifyPhone"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan"
+            android:theme="@style/Theme.LoginSignup" />
+        <activity
+            android:name=".LoginSignup.SignUp7thClass"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan"
+            android:parentActivityName=".LoginSignup.SignUp6thClass"
+            android:theme="@style/Theme.LoginSignup" />
+        <activity
+            android:name=".LoginSignup.SignUp6thClass"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan"
+            android:theme="@style/Theme.LoginSignup" />
+        <activity
+            android:name=".LoginSignup.SignUp5thClass"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan"
+            android:theme="@style/Theme.LoginSignup" />
+        <activity
+            android:name=".LoginSignup.SignUp4thClass"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan"
+            android:theme="@style/Theme.LoginSignup" />
+        <activity
+            android:name=".LoginSignup.SignUp3rdClass"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan"
+            android:theme="@style/Theme.LoginSignup" />
+        <activity
+            android:name=".LoginSignup.SignUp2ndClass"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan"
+            android:theme="@style/Theme.LoginSignup" />
+        <activity
+            android:name=".LoginSignup.SignupActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan"
+            android:theme="@style/Theme.LoginSignup" />
+        <activity
+            android:name=".LoginSignup.LoginActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan"
+            android:theme="@style/Theme.LoginSignup" />
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="true"
+            android:theme="@style/Theme.CalorieCounter">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
+    </application>
+
+</manifest>

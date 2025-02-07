@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">"Don't Lose Track"</string>
+    <string name="enter_full_name">"Full Name"</string>
+    <string name="enter_user_name">"Username"</string>
+    <string name="enter_email">"E-mail"</string>
+    <string name="enter_phone_number">"Phone Number"</string>
+    <string name="enter_password">"Password"</string>
+    <string name="next_btn">"NEXT"</string>
+    <string name="login_btn_string">"Log In"</string>
+    <string name="description_text_verify">Enter One time password sent on\n"</string>
+    <string-array name="height_arrays">
+        <item>"Feet &amp; Inches"</item>
+        <item>Centimeters</item>
+
+    </string-array>
+    <string-array name="weight_arrays">
+        <item>"Pounds"</item>
+        <item>Kilograms</item>
+        <item>Stones</item>
+
+    </string-array>
+</resources>

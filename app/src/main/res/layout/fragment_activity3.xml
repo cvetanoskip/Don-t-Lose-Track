@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="#FAD100"
+    tools:context=".LoginSignup.SignUp4thClass"
+
+
+    >
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="#FAD100"
+    tools:context=".LoginSignup.PopUps.ModeratelyDialog"
+    android:padding="30dp"
+    android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FAD100"
+        tools:context=".LoginSignup.PopUps.ModeratelyDialog"
+        android:padding="20dp"
+        android:gravity="center"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Moderately Active"
+            android:textSize="24sp"
+            android:fontFamily="@font/anton"
+            android:gravity="center_horizontal"
+            android:textColor="@color/black"/>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto"
+        android:gravity="left"
+        android:text="-You do intentional exercise every day that is equivalent to briskly walking for at least one hour and 45 minutes - briskly walking is walking at 4mph\n
+-Alternatively, you can do exercise for a shorter period of time providing the exercise is vigorous. An example of vigorous activity is jogging, i.e. you would need to jog for a minimum of 50 minutes to be considered moderately active.\n
+-You will also probably spend a large part of your day doing something physical - examples include being a mailman or waitress"
+        android:textColor="@color/black"
+        android:textSize="18sp" />
+    <Button
+        android:id="@+id/close_moderately"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="CLOSE"
+        android:backgroundTint="@color/black"
+        android:fontFamily="@font/anton"
+        android:textColor="@color/white"
+        android:layout_marginTop="20dp"
+        android:elevation="5dp"
+        android:transitionName="transition_close_btn" />
+
+</LinearLayout>
+</ScrollView>

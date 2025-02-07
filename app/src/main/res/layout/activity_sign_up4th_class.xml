@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FAD100"
+    tools:context=".LoginSignup.SignUp4thClass"
+
+    android:transitionName="transition_set_btn"
+
+    >
+
+    <LinearLayout
+        android:padding="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <ImageView
+            android:clickable="true"
+            android:id="@+id/signup_back_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:src="@drawable/general_back_icon"
+            android:transitionName="transition_back_arrow_btn"/>
+
+        <TextView
+            android:id="@+id/signup_title_text"
+            android:layout_width="192dp"
+            android:layout_height="133dp"
+            android:layout_marginTop="20dp"
+            android:fontFamily="@font/anton"
+            android:text="Create Account"
+            android:textAllCaps="true"
+            android:textColor="@color/black"
+            android:textSize="40sp"
+            android:transitionName="transition_title_text"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="40dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/anton"
+                android:text="Insert Height"
+                android:textColor="#000000"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/insert_height"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:height="48dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:fontFamily="@font/anton"
+                android:hint="0 ft 0 in"
+                android:textColor="@color/black"
+                android:textColorHint="#6A6A6A"
+                app:errorTextColor="@color/red1"
+                app:boxStrokeErrorColor="@color/red1"
+                app:errorIconTint="@color/red1"
+                android:textSize="20sp"
+                android:transitionName="transition_height_btn">
+
+            </TextView>
+
+
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="40dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/anton"
+                android:text="Insert Weight"
+                android:textColor="#000000"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/insert_weight"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:height="48dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:fontFamily="@font/anton"
+                android:hint="0 lbs"
+                android:textColor="@color/black"
+                android:textColorHint="#6A6A6A"
+                android:textSize="20sp"
+                android:transitionName="transition_weight_btn">
+
+            </TextView>
+
+
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/signup_next_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/next_btn"
+            android:backgroundTint="@color/black"
+            android:textColor="@color/white"
+            android:layout_marginTop="20dp"
+            android:elevation="5dp"
+            android:transitionName="transition_next_btn" />
+
+        <Button
+            android:id="@+id/signup_login_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/login_btn_string"
+            android:backgroundTint="#00000000"
+            android:textColor="@color/black"
+            android:layout_marginTop="20dp"
+            android:elevation="5dp"
+            android:transitionName="transition_login_btn"/>
+
+
+    </LinearLayout>
+
+
+</ScrollView>

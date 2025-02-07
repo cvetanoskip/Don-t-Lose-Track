@@ -1,0 +1,256 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/Dashboardbackground"
+    tools:context=".User.UserDashboard"
+    android:paddingBottom="30dp"
+    android:fitsSystemWindows="true"
+    >
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:context=".User.UserDashboard"
+    android:orientation="vertical"
+    android:background="@color/Dashboardbackground">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp">
+
+        <ImageView
+            android:id="@+id/menu_icon_button"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerVertical="true"
+            android:src="@drawable/menu_icon"
+            app:tint="@color/black"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <Button
+            android:id="@+id/sign_out_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:text="Sign Out"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/SearchBar"
+            android:fontFamily="@font/roboto" />
+
+    </RelativeLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/app_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:fontFamily="@font/anton"
+            android:textColor="@color/white"
+            android:text="Don't Lose Track"
+            android:textSize="26sp" />
+
+
+    </RelativeLayout>
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="20dp">
+
+            <LinearLayout
+                android:layout_width="360dp"
+                android:layout_height="280dp"
+                android:layout_margin="0dp"
+
+                android:padding="0dp"
+                android:background="@color/SearchBar"
+                android:paddingRight="5dp"
+                android:orientation="vertical">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/calories_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="10dp"
+                        android:fontFamily="@font/anton"
+                        android:text="Calories"
+                        android:textColor="@color/light_white"
+                        android:textSize="30sp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+
+                    <ProgressBar
+                        android:id="@+id/progress_calories"
+                        style="@style/CircularDeterminateProgressBar"
+                        android:layout_width="200dp"
+                        android:layout_height="200dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/calories_text"
+                        tools:progress="50" />
+
+                    <TextView
+                        android:id="@+id/calories_remaining_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="10dp"
+                        android:fontFamily="sans-serif-black"
+                        android:text="0"
+                        android:textColor="@color/light_white"
+                        android:textSize="15sp"
+                        app:layout_constraintBottom_toBottomOf="@id/progress_calories"
+                        app:layout_constraintLeft_toLeftOf="@id/progress_calories"
+                        app:layout_constraintRight_toRightOf="@id/progress_calories"
+                        app:layout_constraintTop_toTopOf="@id/progress_calories" />
+
+                    <TextView
+                        android:id="@+id/remaining_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="10dp"
+                        android:fontFamily="sans-serif-black"
+                        android:text="Remaining"
+                        android:textColor="@color/light_white"
+                        android:textSize="15sp"
+                        app:layout_constraintLeft_toLeftOf="@id/progress_calories"
+                        app:layout_constraintRight_toRightOf="@id/progress_calories"
+                        app:layout_constraintTop_toBottomOf="@id/calories_remaining_text" />
+
+                    <TextView
+                        android:id="@+id/goal_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="10dp"
+                        android:fontFamily="sans-serif-black"
+                        android:text="Base Calorie Goal"
+                        android:textColor="@color/light_white"
+                        android:textSize="15sp"
+                        app:layout_constraintLeft_toRightOf="@id/progress_calories"
+                        app:layout_constraintTop_toBottomOf="@id/calories_text" />
+
+                    <TextView
+                        android:id="@+id/goal_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="10dp"
+                        android:fontFamily="sans-serif-black"
+                        android:text="0"
+                        android:textColor="@color/light_white"
+                        android:textSize="15sp"
+                        app:layout_constraintLeft_toRightOf="@id/progress_calories"
+                        app:layout_constraintTop_toBottomOf="@id/goal_text" />
+
+                    <TextView
+                        android:id="@+id/consumed_calories_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="10dp"
+                        android:fontFamily="sans-serif-black"
+                        android:text="Consumed Calories"
+
+                        android:textColor="@color/light_white"
+                        android:textSize="15sp"
+                        app:layout_constraintLeft_toRightOf="@id/progress_calories"
+                        app:layout_constraintTop_toBottomOf="@id/goal_value" />
+
+                    <TextView
+                        android:id="@+id/consumed_calories_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="10dp"
+                        android:fontFamily="sans-serif-black"
+                        android:text="0"
+                        android:textColor="@color/light_white"
+                        android:textSize="15sp"
+                        app:layout_constraintLeft_toRightOf="@id/progress_calories"
+                        app:layout_constraintTop_toBottomOf="@id/consumed_calories_text" />
+
+
+
+                    <LinearLayout
+                        android:id="@+id/burned_calories_section"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:clickable="true"
+                        android:focusable="true"
+                        app:layout_constraintLeft_toRightOf="@id/progress_calories"
+                        app:layout_constraintTop_toBottomOf="@id/consumed_calories_value"
+                        android:background="?attr/selectableItemBackground">
+                        <TextView
+                            android:id="@+id/burned_calories_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="10dp"
+                            android:fontFamily="sans-serif-black"
+                            android:text="Burned Calories"
+                            android:textColor="@color/light_white"
+                            android:textSize="15sp"
+                             />
+
+                        <TextView
+                            android:id="@+id/burned_calories_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="10dp"
+                            android:fontFamily="sans-serif-black"
+                            android:text="0 kcal"
+                            android:textColor="@color/light_white"
+                            android:textSize="15sp"
+                             />
+                    </LinearLayout>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </LinearLayout>
+
+
+        </RelativeLayout>
+    </HorizontalScrollView>
+
+    <Button
+        android:id="@+id/AddMacro"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/SearchBar"
+        android:text="Add Macros" />
+    <Button
+        android:id="@+id/ResetCalorie"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/SearchBar"
+        android:text="Reset Calories" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/macros_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:layout_below="@id/calories_remaining_text" />
+
+
+
+</LinearLayout>
+
+</ScrollView>
