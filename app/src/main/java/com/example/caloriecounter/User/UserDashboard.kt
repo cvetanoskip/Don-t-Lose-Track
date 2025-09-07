@@ -1,5 +1,6 @@
 package com.example.caloriecounter.User
 
+import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
@@ -11,6 +12,7 @@ import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.CalendarView
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -44,12 +46,18 @@ import com.example.caloriecounter.R
 import com.example.caloriecounter.User.PopUps.AddMacros
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.SetOptions
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
-
+import androidx.lifecycle.lifecycleScope
+import com.example.caloriecounter.User.PopUps.QuoteProvider
+import kotlinx.coroutines.launch
 class UserDashboard : AppCompatActivity() {
     lateinit var add: Button
     lateinit var calorie: TextView
@@ -92,6 +100,14 @@ class UserDashboard : AppCompatActivity() {
 
         fetchUserData()
         fetchAndUpdateMacroList()
+        val today = Calendar.getInstance()
+        val todayDate = String.format("%04d-%02d-%02d",
+            today.get(Calendar.YEAR),
+            today.get(Calendar.MONTH) + 1,
+            today.get(Calendar.DAY_OF_MONTH)
+        )
+        fetchMacrosByDate(todayDate)
+
         fun fetchAndDisplayUserData(userId: String) {
             val docRef = db.collection("users").document(userId)
             docRef.get()
@@ -197,65 +213,105 @@ class UserDashboard : AppCompatActivity() {
                 .addOnFailureListener { exception ->
                     Log.e("Firestore", "Error fetching user data", exception)
                 }
-            val resetCalorieButton: Button = findViewById(R.id.ResetCalorie)
-
-            resetCalorieButton.setOnClickListener {
-                // Get the user's ID (assuming you have the current user's UID available)
-                val userId = FirebaseAuth.getInstance().currentUser?.uid
-
-                if (userId != null) {
-                    val userRef = FirebaseFirestore.getInstance().collection("users").document(userId)
-                    val macrosRef = userRef.collection("macros")
-
-                    // Get all documents in the macros subcollection and delete them
-                    macrosRef.get().addOnSuccessListener { documents ->
-                        for (document in documents) {
-                            // For each document in the macros subcollection, delete it
-                            macrosRef.document(document.id).delete()
-                                .addOnSuccessListener {
-                                    Log.d("Firebase", "Macro data deleted successfully!")
-                                    // Optionally, show a success message like Snackbar
-                                    fetchAndUpdateMacroList()
-                                    val docRef = db.collection("users").document(currentUser.uid)
-                                    docRef.get()
-                                        .addOnSuccessListener { document ->
-                                            if (document.exists()) {
-                                                val height = document.getString("height")?.toFloat() ?: 0f
-                                                val weight = document.getString("weight")?.toFloat() ?: 0f
-                                                val activity = document.getString("activity") ?: ""
-                                                val goal = document.getString("goal") ?: ""
-                                                val unitPreference = document.getString("unitPreference") ?: "metric"
-                                                val age = document.getString("age")?.toInt() ?: 18
-                                                val gender = document.getString("gender") ?: ""
-                                                val speed = document.getString("speed") ?: ""
-                                                fetchAndDisplayUserData(currentUser.uid)
-                                                // Calculate base calorie goal using user's data
-
-
-
-                                                calorie.text=document.getDouble("calorieGoal").toString()
-                                                saveCalorieGoalToFirestore(currentUser.uid,calorie.text.toString().toFloat())
-                                                updateDashboard(calorie.text.toString().toFloat())
-                                                fetchConsumedCalories(currentUser.uid)
-                                            }
-                                        }
-                                        .addOnFailureListener { exception ->
-                                            Log.e("Firestore", "Error fetching user data", exception)
-                                        }
-
-                                    calorie.text=baseCalorieGoal.toString()
-                                }
-                                .addOnFailureListener { exception ->
-                                    Log.e("Firebase", "Error deleting macro data", exception)
-                                }
-                        }
-                    }
-                        .addOnFailureListener { exception ->
-                            Log.e("Firebase", "Error retrieving macros subcollection", exception)
-                        }
-                }
-            }
+//            val resetCalorieButton: Button = findViewById(R.id.ResetCalorie)
+//
+//            resetCalorieButton.setOnClickListener {
+//                // Get the user's ID (assuming you have the current user's UID available)
+//                val userId = FirebaseAuth.getInstance().currentUser?.uid
+//
+//                if (userId != null) {
+//                    val userRef = FirebaseFirestore.getInstance().collection("users").document(userId)
+//                    val macrosRef = userRef.collection("macros")
+//
+//                    // Get all documents in the macros subcollection and delete them
+//                    macrosRef.get().addOnSuccessListener { documents ->
+//                        for (document in documents) {
+//                            // For each document in the macros subcollection, delete it
+//                            macrosRef.document(document.id).delete()
+//                                .addOnSuccessListener {
+//                                    Log.d("Firebase", "Macro data deleted successfully!")
+//                                    // Optionally, show a success message like Snackbar
+//                                    fetchAndUpdateMacroList()
+//                                    val docRef = db.collection("users").document(currentUser.uid)
+//                                    docRef.get()
+//                                        .addOnSuccessListener { document ->
+//                                            if (document.exists()) {
+//                                                val height = document.getString("height")?.toFloat() ?: 0f
+//                                                val weight = document.getString("weight")?.toFloat() ?: 0f
+//                                                val activity = document.getString("activity") ?: ""
+//                                                val goal = document.getString("goal") ?: ""
+//                                                val unitPreference = document.getString("unitPreference") ?: "metric"
+//                                                val age = document.getString("age")?.toInt() ?: 18
+//                                                val gender = document.getString("gender") ?: ""
+//                                                val speed = document.getString("speed") ?: ""
+//                                                fetchAndDisplayUserData(currentUser.uid)
+//                                                // Calculate base calorie goal using user's data
+//
+//
+//
+//                                                calorie.text=document.getDouble("calorieGoal").toString()
+//                                                saveCalorieGoalToFirestore(currentUser.uid,calorie.text.toString().toFloat())
+//                                                updateDashboard(calorie.text.toString().toFloat())
+//                                                fetchConsumedCalories(currentUser.uid)
+//                                            }
+//                                        }
+//                                        .addOnFailureListener { exception ->
+//                                            Log.e("Firestore", "Error fetching user data", exception)
+//                                        }
+//
+//                                    calorie.text=baseCalorieGoal.toString()
+//                                }
+//                                .addOnFailureListener { exception ->
+//                                    Log.e("Firebase", "Error deleting macro data", exception)
+//                                }
+//                        }
+//                    }
+//                        .addOnFailureListener { exception ->
+//                            Log.e("Firebase", "Error retrieving macros subcollection", exception)
+//                        }
+//                }
+//            }
         }
+        val calendarView = findViewById<CalendarView>(R.id.calendarView)
+
+        calendarView.setOnDateChangeListener { view, year, month, dayOfMonth ->
+            // Format the date as YYYY-MM-DD
+            val selectedDate = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
+
+            // Fetch macros for this date
+            fetchMacrosByDate(selectedDate)
+        }
+
+        lifecycleScope.launch {
+
+                try {
+                    // Use hardcoded gym quotes
+                    val quote = QuoteProvider.getRandomGymQuote()
+
+                    val dialogView = layoutInflater.inflate(R.layout.dialog_quote, null)
+                    val quoteTextView = dialogView.findViewById<TextView>(R.id.quoteText)
+                    val authorTextView = dialogView.findViewById<TextView>(R.id.authorText)
+                    val closeButton = dialogView.findViewById<Button>(R.id.closeButton)
+
+                    quoteTextView.text = "\"${quote.q}\""
+                    authorTextView.text = "- ${quote.a}"
+
+                    val dialog = AlertDialog.Builder(this@UserDashboard)
+                        .setView(dialogView)
+                        .create()
+
+                    closeButton.setOnClickListener {
+                        dialog.dismiss()
+                    }
+
+                    dialog.show()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+
+        }
+
+
 
 
         add = findViewById(R.id.AddMacro)
@@ -268,6 +324,9 @@ class UserDashboard : AppCompatActivity() {
             val fatsInput = dialog.findViewById<EditText>(R.id.fats_input)
             val servingSizeInput = dialog.findViewById<EditText>(R.id.serving_size_input)
             val addMacrosButton = dialog.findViewById<Button>(R.id.btn_add_macros)
+
+
+
 
             addMacrosButton.setOnClickListener {
                 val protein = proteinInput.text.toString().toFloatOrNull() ?: 0f
@@ -292,6 +351,8 @@ class UserDashboard : AppCompatActivity() {
             dialog.show()
         }
     }
+
+
     private fun fetchUserData() {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         val userRef = userId?.let { FirebaseFirestore.getInstance().collection("users").document(it) }
@@ -361,51 +422,104 @@ class UserDashboard : AppCompatActivity() {
 
         // Access the 'macros' subcollection for the current user
         val macroRef = db.collection("users").document(userId).collection("macros")
-
-        macroRef.get().addOnSuccessListener { result ->
-            for (document in result) {
-                val protein = document.getDouble("protein")?.toFloat() ?: 0f
-                val carbs = document.getDouble("carbs")?.toFloat() ?: 0f
-                val fats = document.getDouble("fats")?.toFloat() ?: 0f
-
-                // Calculate total calories for each macro entry
-                val totalCalories = (protein * 4) + (carbs * 4) + (fats * 9)
-                consumedCalories += totalCalories
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        db.collection("users").document(userId)
+            .collection("macros")
+            .document(today)
+            .get()
+            .addOnSuccessListener { doc ->
+                if (doc.exists()) {
+                    val calories = doc.getDouble("calories")?.toFloat() ?: 0f
+                    updateConsumedCalories(calories)
+                } else {
+                    updateConsumedCalories(0f)
+                }
             }
 
-            // Call updateConsumedCalories with the total consumed calories from the database
-            updateConsumedCalories(consumedCalories)
-        }.addOnFailureListener { exception ->
-            Log.e("Firestore", "Error fetching macros", exception)
-        }
+//        macroRef.get().addOnSuccessListener { result ->
+//            for (document in result) {
+//                val protein = document.getDouble("protein")?.toFloat() ?: 0f
+//                val carbs = document.getDouble("carbs")?.toFloat() ?: 0f
+//                val fats = document.getDouble("fats")?.toFloat() ?: 0f
+//
+//                // Calculate total calories for each macro entry
+//                val totalCalories = (protein * 4) + (carbs * 4) + (fats * 9)
+//                consumedCalories += totalCalories
+//            }
+//
+//            // Call updateConsumedCalories with the total consumed calories from the database
+//            updateConsumedCalories(consumedCalories)
+//        }.addOnFailureListener { exception ->
+//            Log.e("Firestore", "Error fetching macros", exception)
+//        }
     }
     fun addMacrosToFirebase(protein: Float, carbs: Float, fats: Float, totalCalories: Float) {
-        val macroId = UUID.randomUUID().toString()
+        val macroId = UUID.randomUUID().toString()  // unique document ID
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+
         val macroData = hashMapOf(
-            "macroId" to macroId,
             "protein" to protein,
             "carbs" to carbs,
             "fats" to fats,
             "calories" to totalCalories,
-            "timestamp" to System.currentTimeMillis()
+            "timestamp" to System.currentTimeMillis(), // for sorting
+            "date" to today  // store the date explicitly
         )
 
         currentUser?.let { user ->
-            // Generate a unique ID using UUID
-
-
             db.collection("users").document(user.uid)
                 .collection("macros")
-                .document(macroId) // Use the generated UUID as the document ID
-                .set(macroData) // Use set() to create the document with the specified ID
+                .document(macroId) // unique ID per entry
+                .set(macroData)    // no merge
                 .addOnSuccessListener {
-                    Log.d("Firebase", "Macro data added successfully with ID: $macroId")
+                    Log.d("Firebase", "Macro data added for $today with ID: $macroId")
                 }
                 .addOnFailureListener { exception ->
                     Log.e("Firebase", "Error adding macro data", exception)
                 }
         }
     }
+
+
+
+    fun fetchMacrosByDate(selectedDate: String) {
+        currentUser?.let { user ->
+            db.collection("users").document(user.uid)
+                .collection("macros")
+                .whereEqualTo("date", selectedDate)
+                .get()
+                .addOnSuccessListener { documents ->
+                    val macrosList = documents.map { doc ->
+                        val timestamp = doc.getLong("timestamp") ?: System.currentTimeMillis()
+                        mapOf(
+                            "protein" to (doc.getDouble("protein") ?: 0.0),
+                            "carbs" to (doc.getDouble("carbs") ?: 0.0),
+                            "fats" to (doc.getDouble("fats") ?: 0.0),
+                            "calories" to (doc.getDouble("calories") ?: 0.0),
+                            "timestamp" to (doc.getLong("timestamp") ?: 0L),
+                            "date" to (doc.getString("date") ?: SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(timestamp)))
+                        )
+                    }.sortedBy { it["timestamp"] as Long } // sort in code
+
+                    val recyclerView = findViewById<RecyclerView>(R.id.macros_list)
+                    recyclerView.layoutManager = LinearLayoutManager(this)
+
+                    if (recyclerView.adapter == null) {
+                        recyclerView.adapter = MacrosAdapter(macrosList.toMutableList()) { docId, position ->
+                            deleteMacro(docId, position)
+                        }
+                    } else {
+                        // If adapter already exists, just update data
+                        (recyclerView.adapter as MacrosAdapter).updateData(macrosList.toMutableList())
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.e("Firebase", "Error fetching macros by date", exception)
+                }
+        }
+    }
+
+
 
 
     fun updateConsumedCalories(newCalories: Float) {
@@ -470,30 +584,58 @@ class UserDashboard : AppCompatActivity() {
         currentUser?.let { user ->
             db.collection("users").document(user.uid)
                 .collection("macros")
-                .orderBy("timestamp") // Order by the timestamp field
+                .orderBy("timestamp", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener { documents ->
                     val macrosList = documents.map { doc ->
+                        val timestamp = doc.getLong("timestamp") ?: System.currentTimeMillis()
                         mapOf(
+                            "id" to doc.id,
                             "protein" to (doc.getDouble("protein") ?: 0.0),
                             "carbs" to (doc.getDouble("carbs") ?: 0.0),
                             "fats" to (doc.getDouble("fats") ?: 0.0),
                             "calories" to (doc.getDouble("calories") ?: 0.0),
-                            "timestamp" to (doc.getLong("timestamp") ?: 0L) // Include for debugging if needed
+                            "date" to (doc.getString("date")
+                                ?: SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(timestamp)))
                         )
                     }
 
-                    // Update RecyclerView with the new macros data
                     val recyclerView = findViewById<RecyclerView>(R.id.macros_list)
                     recyclerView.layoutManager = LinearLayoutManager(this)
-
-                    recyclerView.adapter = MacrosAdapter(macrosList.toMutableList()) // Convert to mutable if needed
+                    recyclerView.adapter = MacrosAdapter(macrosList.toMutableList()) { docId, position ->
+                        deleteMacro(docId, position)
+                    }
                 }
                 .addOnFailureListener { exception ->
                     Log.e("Firebase", "Error fetching macros", exception)
                 }
         }
     }
+    private fun deleteMacro(docId: String, position: Int) {
+        currentUser?.let { user ->
+            db.collection("users").document(user.uid)
+                .collection("macros")
+                .document(docId)
+                .delete()
+                .addOnSuccessListener {
+                    Log.d("Firebase", "Macro deleted successfully")
+                    // Remove from adapter
+                    val adapter = findViewById<RecyclerView>(R.id.macros_list).adapter as MacrosAdapter
+                    adapter.macrosList.removeAt(position)
+                    adapter.notifyItemRemoved(position)
+
+                    // Update consumed calories after deletion
+                    fetchAndUpdateMacroList()
+                    getExistingCalories { total ->
+                        updateConsumedCalories(total)
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.e("Firebase", "Error deleting macro", e)
+                }
+        }
+    }
+
     fun calculateProgressPercentage(consumedCalories: Float, baseCalorieGoal: Float): Int {
         return if (baseCalorieGoal > 0) {
             ((consumedCalories / baseCalorieGoal) * 100).toInt()
@@ -528,7 +670,10 @@ class UserDashboard : AppCompatActivity() {
                 Log.e("Firebase", "Error fetching macros", exception)
             }
     }
-
+    override fun onBackPressed() {
+        // Prevent going back to login
+        moveTaskToBack(true) // minimizes the app instead of going back
+    }
     fun updateDashboardWithMacros(protein: Int, carbs: Int, fats: Int) {
         val totalCaloriesFromMacros = (protein * 4) + (carbs * 4) + (fats * 9)
         val consumedCaloriesValue = findViewById<TextView>(R.id.consumed_calories_value)
