@@ -438,17 +438,48 @@ class UserDashboard : AppCompatActivity() {
         }
     }
 
-    private fun calculateBurnedCalories(stepCount: Int, selectedDate: String = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())) {
-        val burnedCalories = if (isMetric) {
+    private fun calculateBurnedCalories(
+        stepCount: Int,
+        selectedDate: String = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+    ) {
+        val burnedCaloriesFromSteps = if (isMetric) {
             stepCount * userWeight * 0.000602
         } else {
             stepCount * (userWeight / 2.205) * 0.000602
         }
-        burnedCaloriesTextView.text = String.format("%.2f kcal", burnedCalories)
-        Log.d("UserDashboard", "Calculated burned calories: $burnedCalories for steps: $stepCount, weight: $userWeight, isMetric: $isMetric, date: $selectedDate")
-        // Update dashboard to reflect burned calories for the selected date
-        updateDashboard(calorie.text.toString().toFloatOrNull() ?: 0f, selectedDate)
+
+        val userId = currentUser?.uid ?: return
+
+        db.collection("users")
+            .document(userId)
+            .collection("exercises")
+            .document(selectedDate)
+            .collection("entries")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                var exerciseCalories = 0f
+
+                for (doc in snapshot.documents) {
+                    exerciseCalories += doc.getDouble("calories")?.toFloat() ?: 0f
+                }
+
+                val totalBurned = burnedCaloriesFromSteps + exerciseCalories
+                burnedCaloriesTextView.text = String.format("%.2f kcal", totalBurned)
+
+                Log.d(
+                    "UserDashboard",
+                    "Calculated burned calories: $totalBurned (steps: $burnedCaloriesFromSteps, exercises: $exerciseCalories) for $selectedDate"
+                )
+
+                updateDashboard(calorie.text.toString().toFloatOrNull() ?: 0f, selectedDate)
+            }
+            .addOnFailureListener {
+                burnedCaloriesTextView.text = String.format("%.2f kcal", burnedCaloriesFromSteps)
+                Log.e("Firebase", "Error fetching exercises for $selectedDate", it)
+                updateDashboard(calorie.text.toString().toFloatOrNull() ?: 0f, selectedDate)
+            }
     }
+
     fun saveCalorieGoalToFirestore(userId: String, calorieGoal: Float) {
         val userRef = db.collection("users").document(userId)
 

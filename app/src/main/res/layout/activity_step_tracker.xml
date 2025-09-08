@@ -6,7 +6,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:ignore="ExtraText">
 
-    <!-- ImageButton in the top left corner -->
     <ImageButton
         android:id="@+id/back_button"
         android:layout_width="48dp"
@@ -15,10 +14,8 @@
         android:background="@color/transparent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_margin="16dp"/> <!-- Change this to your desired image -->
+        android:layout_margin="16dp"/>
 
-
-    <!-- ProgressBar in the center -->
     <ProgressBar
         android:id="@+id/circularProgressBar"
         android:rotation="-90"
@@ -34,7 +31,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- TextView to display step count -->
     <TextView
         android:id="@+id/stepCountText"
         android:layout_width="wrap_content"
@@ -48,7 +44,6 @@
         app:layout_constraintStart_toStartOf="@id/circularProgressBar"
         app:layout_constraintEnd_toEndOf="@id/circularProgressBar" />
 
-    <!-- Reset Button below the ProgressBar -->
     <Button
         android:id="@+id/resetButton"
         android:layout_width="wrap_content"
@@ -61,4 +56,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="20dp" />
 
+    <Button
+        android:id="@+id/addExerciseButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Exercise"
+        android:backgroundTint="@color/SearchBar"
+        android:textColor="@color/white"
+        app:layout_constraintTop_toBottomOf="@id/resetButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="20dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

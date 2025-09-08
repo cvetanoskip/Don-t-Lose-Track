@@ -19,4 +19,13 @@
         <item>Stones</item>
 
     </string-array>
+    <string-array name="exercise_types">
+        <item>Running</item>
+        <item>Cycling</item>
+        <item>Weightlifting</item>
+        <item>Walking</item>
+        <item>Yoga</item>
+        <item>Swimming</item>
+        <item>HIIT</item>
+    </string-array>
 </resources>
