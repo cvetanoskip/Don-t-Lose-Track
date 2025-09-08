@@ -5,7 +5,9 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ProgressBar
@@ -41,11 +43,12 @@ class StepTrackerActivity : AppCompatActivity(), SensorEventListener {
     private var lastFilteredAccel = 0.0
     private var lastGyroY = 0.0
 
+
     // Sensitivity Thresholds
-    private val accelThreshold = 1.0  // Detects acceleration change (lowered to avoid false steps)
-    private val gyroThreshold = 0.75   // Detects foot tilt movement
-    private val stepCooldown = 550L   // Prevents false double-counting (600ms per step)
-    private val lowPassFilterFactor = 0.2  // Reduces noise from small movements
+    private val accelThreshold = 0.5  // Lowered for linear walking sensitivity
+    private val gyroThreshold = 0.3   // Increased to filter out minor tilts
+    private val stepCooldown = 250L   // Reduced for faster walking pace
+    private val lowPassFilterFactor = 0.4  // Increased to smooth out tilt noise
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,6 +73,9 @@ class StepTrackerActivity : AppCompatActivity(), SensorEventListener {
         resetButton.setOnClickListener {
             resetSteps()
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            requestPermissions(arrayOf(android.Manifest.permission.ACTIVITY_RECOGNITION), 100)
+        }
     }
 
     override fun onResume() {
@@ -78,11 +84,14 @@ class StepTrackerActivity : AppCompatActivity(), SensorEventListener {
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
 
         if (accelerometer == null || gyroscope == null) {
-            Toast.makeText(this, "No Accelerometer or Gyroscope!", Toast.LENGTH_SHORT).show()
+            isSensorAvailable = false
+            Toast.makeText(this, "Required sensors (Accelerometer or Gyroscope) unavailable!", Toast.LENGTH_LONG).show()
+            Log.e("StepTracker", "Sensor unavailable: accelerometer=$accelerometer, gyroscope=$gyroscope")
         } else {
             isSensorAvailable = true
             sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI)
             sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_UI)
+            Log.d("StepTracker", "Sensors registered: accelerometer and gyroscope available")
         }
     }
 
@@ -94,32 +103,35 @@ class StepTrackerActivity : AppCompatActivity(), SensorEventListener {
     override fun onSensorChanged(event: SensorEvent?) {
         if (event != null) {
             when (event.sensor.type) {
-                Sensor.TYPE_ACCELEROMETER -> handleAccelerometerData(event.values)
                 Sensor.TYPE_GYROSCOPE -> handleGyroscopeData(event.values)
+                Sensor.TYPE_ACCELEROMETER -> handleAccelerometerData(event.values)
             }
         }
     }
 
     private fun handleAccelerometerData(values: FloatArray) {
         val rawMagnitude = sqrt(values[0] * values[0] + values[1] * values[1] + values[2] * values[2])
-
-        // Apply low-pass filter to smooth out sudden changes
         val filteredMagnitude = lowPass(rawMagnitude.toDouble(), lastFilteredAccel)
-
         val currentTime = System.currentTimeMillis()
-        if (filteredMagnitude - lastFilteredAccel > accelThreshold && (currentTime - lastStepTime) > stepCooldown) {
-            if (abs(lastGyroY) > gyroThreshold) {  // Ensure gyroscope confirms a step
-                totalSteps++
-                lastStepTime = currentTime
-                updateUI(totalSteps.toInt())
-                saveStepsToFirebase(totalSteps.toInt())
-            }
+
+        // Calculate acceleration difference and validate with gyroscope
+        val accelDiff = filteredMagnitude - lastFilteredAccel
+        val isGyroValid = abs(lastGyroY) > gyroThreshold && abs(lastGyroY) < 1.5  // Ensure step-like rotation
+        if (accelDiff > accelThreshold && isGyroValid && (currentTime - lastStepTime) > stepCooldown) {
+            totalSteps++
+            lastStepTime = currentTime
+            updateUI(totalSteps.toInt())
+            saveStepsToFirebase(totalSteps.toInt())
+            Log.d("StepTracker", "Step detected: accelDiff=$accelDiff, gyroY=$lastGyroY, steps=$totalSteps")
+        } else {
+            Log.d("StepTracker", "No step: accelDiff=$accelDiff, gyroY=$lastGyroY, timeDiff=${currentTime - lastStepTime}")
         }
         lastFilteredAccel = filteredMagnitude
     }
 
     private fun handleGyroscopeData(values: FloatArray) {
-        lastGyroY = values[1].toDouble() // Capture Y-axis rotation (helps confirm step movement)
+        lastGyroY = values[1].toDouble()
+        Log.d("StepTracker", "Gyroscope Y: $lastGyroY")
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
@@ -132,23 +144,31 @@ class StepTrackerActivity : AppCompatActivity(), SensorEventListener {
 
     private fun updateUI(steps: Int) {
         stepCountText.text = "$steps Steps"
-        progressBar.progress = steps.coerceAtMost(10000) // Limits max progress to 10,000
+        progressBar.progress = steps.coerceAtMost(10000)
     }
 
     private fun resetSteps() {
-        previousSteps += totalSteps
         totalSteps = 0f
+        previousSteps = 0f
         updateUI(0)
         saveStepsToFirebase(0)
     }
 
     private fun saveStepsToFirebase(steps: Int) {
         userId?.let {
+            val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date())
+            val stepData = hashMapOf(
+                "stepCount" to steps.toLong(),
+                "date" to today,
+                "timestamp" to System.currentTimeMillis()
+            )
+
             db.collection("users").document(it)
-                .update("steps", steps)
+                .collection("steps")
+                .document(today) // Use date as document ID
+                .set(stepData)
                 .addOnSuccessListener {
-                    Toast.makeText(this, "Steps saved!", Toast.LENGTH_SHORT).show()
-                }
+                     }
                 .addOnFailureListener {
                     Toast.makeText(this, "Failed to save steps", Toast.LENGTH_SHORT).show()
                 }
@@ -157,16 +177,28 @@ class StepTrackerActivity : AppCompatActivity(), SensorEventListener {
 
     private fun loadStepsFromFirebase() {
         userId?.let {
-            db.collection("users").document(it).get()
+            val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date())
+            db.collection("users").document(it)
+                .collection("steps")
+                .document(today)
+                .get()
                 .addOnSuccessListener { document ->
-                    if (document != null && document.contains("steps")) {
-                        val savedSteps = document.getLong("steps")?.toInt() ?: 0
+                    if (document != null && document.exists()) {
+                        val savedSteps = document.getLong("stepCount")?.toInt() ?: 0
                         totalSteps = savedSteps.toFloat()
+                        previousSteps = 0f // Reset previousSteps on load
                         updateUI(savedSteps)
+                    } else {
+                        totalSteps = 0f
+                        previousSteps = 0f
+                        updateUI(0)
                     }
                 }
                 .addOnFailureListener {
                     Toast.makeText(this, "Failed to load steps", Toast.LENGTH_SHORT).show()
+                    totalSteps = 0f
+                    previousSteps = 0f
+                    updateUI(0)
                 }
         }
     }

@@ -1,0 +1,33 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="@drawable/card_background">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enter Water Intake (ml)"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#003554" />
+
+    <EditText
+        android:id="@+id/input_water"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="e.g. 250"
+        android:textColor="@color/black"
+        android:inputType="number"
+        android:layout_marginTop="12dp" />
+
+    <Button
+        android:id="@+id/btn_add_water"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add"
+        android:textColor="#fff"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/button_background" />
+</LinearLayout>

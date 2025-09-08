@@ -4,6 +4,8 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -18,6 +20,8 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -75,7 +79,8 @@ class UserDashboard : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user_dashboard)
-        fetchMacros()
+
+        loadWaterFromFirebase()
         signOutButton = findViewById(R.id.sign_out_button)
         mAuth = FirebaseAuth.getInstance()
         // Set an OnClickListener for the Sign Out button
@@ -84,7 +89,7 @@ class UserDashboard : AppCompatActivity() {
         }
         var baseCalorieGoal: Float = 0f
         calorie=findViewById(R.id.goal_value)
-         menuBtn=findViewById(R.id.menu_icon_button)
+        menuBtn=findViewById(R.id.menu_icon_button)
         menuBtn.setOnClickListener{
             val intent = Intent(this, MenuActivity::class.java)
             startActivity(intent)  // Start MenuActivity
@@ -99,7 +104,7 @@ class UserDashboard : AppCompatActivity() {
 
 
         fetchUserData()
-        fetchAndUpdateMacroList()
+
         val today = Calendar.getInstance()
         val todayDate = String.format("%04d-%02d-%02d",
             today.get(Calendar.YEAR),
@@ -107,43 +112,48 @@ class UserDashboard : AppCompatActivity() {
             today.get(Calendar.DAY_OF_MONTH)
         )
         fetchMacrosByDate(todayDate)
-
-        fun fetchAndDisplayUserData(userId: String) {
-            val docRef = db.collection("users").document(userId)
-            docRef.get()
-                .addOnSuccessListener { document ->
-                    if (document.exists()) {
-                        val height = document.getString("height")?.toFloat() ?: 0f
-                        val weight = document.getString("weight")?.toFloat() ?: 0f
-                        val activity = document.getString("activity") ?: ""
-                        val goal = document.getString("goal") ?: ""
-                        val unitPreference = document.getString("unitPreference") ?: "metric"
-                        val age = document.getString("age")?.toInt() ?: 18
-                        val gender = document.getString("gender") ?: ""
-                        val speed = document.getString("speed") ?: ""
-                        val modified = document.getBoolean("modified") ?: false
-                        val calorieGoal = document.getDouble("calorieGoal")?.toFloat() ?: 0f
-                        Log.d("Firestore", "User data successfully added! $height,$weight")
-                        if(!modified) {
-
-                            baseCalorieGoal = calculateBaseCalorieGoal(
-                                height, weight, activity, goal, unitPreference, age, gender, speed
-                            )
-                            updateDashboard(baseCalorieGoal)
-                        }
-                        else if(modified)
-                        {
-
-                            updateDashboard(calorieGoal)
-                        }
-                    } else {
-                        Log.w("Firestore", "Document does not exist.")
-                    }
-                }
-                .addOnFailureListener { exception ->
-                    Log.e("Firestore", "Error fetching user data", exception)
-                }
+        findViewById<Button>(R.id.AddWater).setOnClickListener {
+            showAddWaterDialog()
         }
+
+
+
+//        fun fetchAndDisplayUserData(userId: String) {
+//            val docRef = db.collection("users").document(userId)
+//            docRef.get()
+//                .addOnSuccessListener { document ->
+//                    if (document.exists()) {
+//                        val height = document.getString("height")?.toFloat() ?: 0f
+//                        val weight = document.getString("weight")?.toFloat() ?: 0f
+//                        val activity = document.getString("activity") ?: ""
+//                        val goal = document.getString("goal") ?: ""
+//                        val unitPreference = document.getString("unitPreference") ?: "metric"
+//                        val age = document.getString("age")?.toInt() ?: 18
+//                        val gender = document.getString("gender") ?: ""
+//                        val speed = document.getString("speed") ?: ""
+//                        val modified = document.getBoolean("modified") ?: false
+//                        val calorieGoal = document.getDouble("calorieGoal")?.toFloat() ?: 0f
+//                        Log.d("Firestore", "User data successfully added! $height,$weight")
+//                        if(!modified) {
+//
+//                            baseCalorieGoal = calculateBaseCalorieGoal(
+//                                height, weight, activity, goal, unitPreference, age, gender, speed
+//                            )
+//                            updateDashboard(baseCalorieGoal)
+//                        }
+//                        else if(modified)
+//                        {
+//
+//                            updateDashboard(calorieGoal)
+//                        }
+//                    } else {
+//                        Log.w("Firestore", "Document does not exist.")
+//                    }
+//                }
+//                .addOnFailureListener { exception ->
+//                    Log.e("Firestore", "Error fetching user data", exception)
+//                }
+//        }
 
         sessionManager = SessionManager(this)
         val userDetails = sessionManager.getUsersDetailFromSession()
@@ -176,9 +186,9 @@ class UserDashboard : AppCompatActivity() {
                         } ?: 0f
 
                         Log.d("Firestore", "calorieGoal: $calorieGoal")
-                        fetchAndDisplayUserData(currentUser.uid)
+
                         //   Calculate base calorie goal using user's data
-                      //  Log.w("Debug", "Calories Reseted. $calorieGoal")
+                        //  Log.w("Debug", "Calories Reseted. $calorieGoal")
                         if (!modified) {
                             // Calculate base calorie goal if 'modified' is false
                             val baseCalorieGoal = calculateBaseCalorieGoal(
@@ -213,64 +223,7 @@ class UserDashboard : AppCompatActivity() {
                 .addOnFailureListener { exception ->
                     Log.e("Firestore", "Error fetching user data", exception)
                 }
-//            val resetCalorieButton: Button = findViewById(R.id.ResetCalorie)
-//
-//            resetCalorieButton.setOnClickListener {
-//                // Get the user's ID (assuming you have the current user's UID available)
-//                val userId = FirebaseAuth.getInstance().currentUser?.uid
-//
-//                if (userId != null) {
-//                    val userRef = FirebaseFirestore.getInstance().collection("users").document(userId)
-//                    val macrosRef = userRef.collection("macros")
-//
-//                    // Get all documents in the macros subcollection and delete them
-//                    macrosRef.get().addOnSuccessListener { documents ->
-//                        for (document in documents) {
-//                            // For each document in the macros subcollection, delete it
-//                            macrosRef.document(document.id).delete()
-//                                .addOnSuccessListener {
-//                                    Log.d("Firebase", "Macro data deleted successfully!")
-//                                    // Optionally, show a success message like Snackbar
-//                                    fetchAndUpdateMacroList()
-//                                    val docRef = db.collection("users").document(currentUser.uid)
-//                                    docRef.get()
-//                                        .addOnSuccessListener { document ->
-//                                            if (document.exists()) {
-//                                                val height = document.getString("height")?.toFloat() ?: 0f
-//                                                val weight = document.getString("weight")?.toFloat() ?: 0f
-//                                                val activity = document.getString("activity") ?: ""
-//                                                val goal = document.getString("goal") ?: ""
-//                                                val unitPreference = document.getString("unitPreference") ?: "metric"
-//                                                val age = document.getString("age")?.toInt() ?: 18
-//                                                val gender = document.getString("gender") ?: ""
-//                                                val speed = document.getString("speed") ?: ""
-//                                                fetchAndDisplayUserData(currentUser.uid)
-//                                                // Calculate base calorie goal using user's data
-//
-//
-//
-//                                                calorie.text=document.getDouble("calorieGoal").toString()
-//                                                saveCalorieGoalToFirestore(currentUser.uid,calorie.text.toString().toFloat())
-//                                                updateDashboard(calorie.text.toString().toFloat())
-//                                                fetchConsumedCalories(currentUser.uid)
-//                                            }
-//                                        }
-//                                        .addOnFailureListener { exception ->
-//                                            Log.e("Firestore", "Error fetching user data", exception)
-//                                        }
-//
-//                                    calorie.text=baseCalorieGoal.toString()
-//                                }
-//                                .addOnFailureListener { exception ->
-//                                    Log.e("Firebase", "Error deleting macro data", exception)
-//                                }
-//                        }
-//                    }
-//                        .addOnFailureListener { exception ->
-//                            Log.e("Firebase", "Error retrieving macros subcollection", exception)
-//                        }
-//                }
-//            }
+
         }
         val calendarView = findViewById<CalendarView>(R.id.calendarView)
 
@@ -284,30 +237,30 @@ class UserDashboard : AppCompatActivity() {
 
         lifecycleScope.launch {
 
-                try {
-                    // Use hardcoded gym quotes
-                    val quote = QuoteProvider.getRandomGymQuote()
+            try {
+                // Use hardcoded gym quotes
+                val quote = QuoteProvider.getRandomGymQuote()
 
-                    val dialogView = layoutInflater.inflate(R.layout.dialog_quote, null)
-                    val quoteTextView = dialogView.findViewById<TextView>(R.id.quoteText)
-                    val authorTextView = dialogView.findViewById<TextView>(R.id.authorText)
-                    val closeButton = dialogView.findViewById<Button>(R.id.closeButton)
+                val dialogView = layoutInflater.inflate(R.layout.dialog_quote, null)
+                val quoteTextView = dialogView.findViewById<TextView>(R.id.quoteText)
+                val authorTextView = dialogView.findViewById<TextView>(R.id.authorText)
+                val closeButton = dialogView.findViewById<Button>(R.id.closeButton)
 
-                    quoteTextView.text = "\"${quote.q}\""
-                    authorTextView.text = "- ${quote.a}"
+                quoteTextView.text = "\"${quote.q}\""
+                authorTextView.text = "- ${quote.a}"
 
-                    val dialog = AlertDialog.Builder(this@UserDashboard)
-                        .setView(dialogView)
-                        .create()
+                val dialog = AlertDialog.Builder(this@UserDashboard)
+                    .setView(dialogView)
+                    .create()
 
-                    closeButton.setOnClickListener {
-                        dialog.dismiss()
-                    }
-
-                    dialog.show()
-                } catch (e: Exception) {
-                    e.printStackTrace()
+                closeButton.setOnClickListener {
+                    dialog.dismiss()
                 }
+
+                dialog.show()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
 
         }
 
@@ -352,41 +305,149 @@ class UserDashboard : AppCompatActivity() {
         }
     }
 
+    private fun showAddWaterDialog() {
+        val builder = AlertDialog.Builder(this)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_add_water, null)
+        builder.setView(dialogView)
 
+        val input = dialogView.findViewById<EditText>(R.id.input_water)
+        val btnAdd = dialogView.findViewById<Button>(R.id.btn_add_water)
+
+        val dialog = builder.create()
+
+        btnAdd.setOnClickListener {
+            val waterMl = input.text.toString().toIntOrNull()
+            if (waterMl != null && waterMl > 0) {
+                addWaterToFirebase(waterMl)
+                dialog.dismiss()
+            } else {
+                Toast.makeText(this, "Enter valid amount", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        dialog.show()
+    }
+    private fun addWaterToFirebase(amount: Int) {
+        val user = FirebaseAuth.getInstance().currentUser ?: return
+        val db = FirebaseFirestore.getInstance()
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+
+        val waterRef = db.collection("users").document(user.uid)
+            .collection("water")
+            .document(today)
+        waterRef.get().addOnSuccessListener { doc ->
+            val currentWater = doc.getLong("waterAmount")?.toInt() ?: 0
+            val newTotal = currentWater + amount
+
+            waterRef.set(mapOf("waterAmount" to newTotal, "date" to today))
+                .addOnSuccessListener {
+                    Log.d("UserDashboard", "Water added for $today: $newTotal ml")
+                    updateWaterUI(newTotal)
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Failed to save water", Toast.LENGTH_SHORT).show()
+                }
+        }.addOnFailureListener {
+            Toast.makeText(this, "Failed to fetch water data", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun loadWaterFromFirebase() {
+        val user = FirebaseAuth.getInstance().currentUser ?: return
+        val db = FirebaseFirestore.getInstance()
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+
+        db.collection("users").document(user.uid)
+            .collection("water")
+            .document(today)
+            .get()
+            .addOnSuccessListener { doc ->
+                val water = doc.getLong("waterAmount")?.toInt() ?: 0
+                Log.d("UserDashboard", "Fetched water for $today: $water ml")
+                updateWaterUI(water)
+            }
+            .addOnFailureListener {
+                Log.e("Firebase", "Error fetching water for $today", it)
+                updateWaterUI(0)
+            }
+    }
+
+    private fun updateWaterUI(water: Int) {
+        val progressBar = findViewById<ProgressBar>(R.id.progress_water)
+        val waterText = findViewById<TextView>(R.id.water_remaining_text)
+
+        progressBar.progress = water
+        waterText.text = "$water / 3000 ml"
+        Log.d("UserDashboard", "Updated water UI: $water ml")
+        if (water >= progressBar.max) {
+            showCongratulationsDialog()
+        }
+    }
+    private fun showCongratulationsDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Congratulations! 🎉")
+            .setMessage("You reached your daily goal of 3000ml of water!")
+            .setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+    }
     private fun fetchUserData() {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         val userRef = userId?.let { FirebaseFirestore.getInstance().collection("users").document(it) }
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
         if (userRef != null) {
             userRef.get().addOnSuccessListener { document ->
                 if (document.exists()) {
-                    val weight = document.getString("weight")?.toDouble() ?: 70.0 // Default 70kg
+                    val weight = document.getString("weight")?.toDouble() ?: 70.0
                     val unitPreference = document.getString("unitPreference") ?: "metric"
-                    val firestoreSteps = if (document.contains("steps")) {
-                        document.getLong("steps")?.toInt() ?: 0
-                    } else {
-                        0
-                    }
-
-
                     userWeight = weight
                     isMetric = unitPreference == "metric"
+                    Log.d("UserDashboard", "Fetched user data: weight=$weight, unitPreference=$unitPreference")
 
-                    calculateBurnedCalories(firestoreSteps)
+                    // Fetch today's steps from the steps subcollection
+                    db.collection("users").document(userId)
+                        .collection("steps")
+                        .document(today)
+                        .get()
+                        .addOnSuccessListener { stepDoc ->
+                            val firestoreSteps = if (stepDoc.exists()) {
+                                stepDoc.getLong("stepCount")?.toInt() ?: 0
+                            } else {
+                                0
+                            }
+                            Log.d("UserDashboard", "Fetched steps for $today: $firestoreSteps")
+                            calculateBurnedCalories(firestoreSteps, today)
+                        }
+                        .addOnFailureListener { exception ->
+                            Log.e("Firebase", "Error fetching steps for $today", exception)
+                            calculateBurnedCalories(0, today)
+                        }
+                } else {
+                    Log.w("UserDashboard", "User document does not exist")
+                    calculateBurnedCalories(0, today)
                 }
+            }.addOnFailureListener { exception ->
+                Log.e("Firebase", "Error fetching user data", exception)
+                calculateBurnedCalories(0, today)
             }
+        } else {
+            Log.e("UserDashboard", "No user ID available")
+            calculateBurnedCalories(0, today)
         }
     }
 
-    private fun calculateBurnedCalories(stepCount: Int) {
+    private fun calculateBurnedCalories(stepCount: Int, selectedDate: String = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())) {
         val burnedCalories = if (isMetric) {
-            stepCount * userWeight * 0.000602 // Approx kcal burned per step per kg
+            stepCount * userWeight * 0.000602
         } else {
-            stepCount * (userWeight / 2.205) * 0.000602 // Convert pounds to kg
+            stepCount * (userWeight / 2.205) * 0.000602
         }
-
         burnedCaloriesTextView.text = String.format("%.2f kcal", burnedCalories)
-
+        Log.d("UserDashboard", "Calculated burned calories: $burnedCalories for steps: $stepCount, weight: $userWeight, isMetric: $isMetric, date: $selectedDate")
+        // Update dashboard to reflect burned calories for the selected date
+        updateDashboard(calorie.text.toString().toFloatOrNull() ?: 0f, selectedDate)
     }
     fun saveCalorieGoalToFirestore(userId: String, calorieGoal: Float) {
         val userRef = db.collection("users").document(userId)
@@ -394,7 +455,7 @@ class UserDashboard : AppCompatActivity() {
         val data = hashMapOf(
             "calorieGoal" to calorieGoal,
 
-        ) as MutableMap<String, Any>
+            ) as MutableMap<String, Any>
 
 
         currentUser?.let { user ->
@@ -418,43 +479,26 @@ class UserDashboard : AppCompatActivity() {
         finish() // Optional: finish current activity to prevent going back to it
     }
     private fun fetchConsumedCalories(userId: String) {
-        var consumedCalories = 0f
-
-        // Access the 'macros' subcollection for the current user
-        val macroRef = db.collection("users").document(userId).collection("macros")
         val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
         db.collection("users").document(userId)
             .collection("macros")
-            .document(today)
+            .whereEqualTo("date", today)
             .get()
-            .addOnSuccessListener { doc ->
-                if (doc.exists()) {
-                    val calories = doc.getDouble("calories")?.toFloat() ?: 0f
-                    updateConsumedCalories(calories)
-                } else {
-                    updateConsumedCalories(0f)
-                }
+            .addOnSuccessListener { documents ->
+                val totalCalories = documents.sumOf { doc ->
+                    (doc.getDouble("calories") ?: 0.0)
+                }.toFloat()
+                Log.d("UserDashboard", "Fetched consumed calories for $today: $totalCalories, ${documents.size()} entries")
+                updateConsumedCalories(totalCalories)
             }
-
-//        macroRef.get().addOnSuccessListener { result ->
-//            for (document in result) {
-//                val protein = document.getDouble("protein")?.toFloat() ?: 0f
-//                val carbs = document.getDouble("carbs")?.toFloat() ?: 0f
-//                val fats = document.getDouble("fats")?.toFloat() ?: 0f
-//
-//                // Calculate total calories for each macro entry
-//                val totalCalories = (protein * 4) + (carbs * 4) + (fats * 9)
-//                consumedCalories += totalCalories
-//            }
-//
-//            // Call updateConsumedCalories with the total consumed calories from the database
-//            updateConsumedCalories(consumedCalories)
-//        }.addOnFailureListener { exception ->
-//            Log.e("Firestore", "Error fetching macros", exception)
-//        }
+            .addOnFailureListener { exception ->
+                Log.e("Firestore", "Error fetching macros for $today", exception)
+                updateConsumedCalories(0f)
+            }
     }
+
     fun addMacrosToFirebase(protein: Float, carbs: Float, fats: Float, totalCalories: Float) {
-        val macroId = UUID.randomUUID().toString()  // unique document ID
+        val macroId = UUID.randomUUID().toString()
         val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
         val macroData = hashMapOf(
@@ -462,17 +506,18 @@ class UserDashboard : AppCompatActivity() {
             "carbs" to carbs,
             "fats" to fats,
             "calories" to totalCalories,
-            "timestamp" to System.currentTimeMillis(), // for sorting
-            "date" to today  // store the date explicitly
+            "timestamp" to System.currentTimeMillis(),
+            "date" to today
         )
 
         currentUser?.let { user ->
             db.collection("users").document(user.uid)
                 .collection("macros")
-                .document(macroId) // unique ID per entry
-                .set(macroData)    // no merge
+                .document(macroId)
+                .set(macroData)
                 .addOnSuccessListener {
                     Log.d("Firebase", "Macro data added for $today with ID: $macroId")
+                    fetchMacrosByDate(today) // Refresh the list and calories for today
                 }
                 .addOnFailureListener { exception ->
                     Log.e("Firebase", "Error adding macro data", exception)
@@ -484,6 +529,7 @@ class UserDashboard : AppCompatActivity() {
 
     fun fetchMacrosByDate(selectedDate: String) {
         currentUser?.let { user ->
+            Log.d("UserDashboard", "Fetching macros for date: $selectedDate")
             db.collection("users").document(user.uid)
                 .collection("macros")
                 .whereEqualTo("date", selectedDate)
@@ -499,7 +545,7 @@ class UserDashboard : AppCompatActivity() {
                             "timestamp" to (doc.getLong("timestamp") ?: 0L),
                             "date" to (doc.getString("date") ?: SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(timestamp)))
                         )
-                    }.sortedBy { it["timestamp"] as Long } // sort in code
+                    }.sortedBy { it["timestamp"] as Long }
 
                     val recyclerView = findViewById<RecyclerView>(R.id.macros_list)
                     recyclerView.layoutManager = LinearLayoutManager(this)
@@ -509,13 +555,64 @@ class UserDashboard : AppCompatActivity() {
                             deleteMacro(docId, position)
                         }
                     } else {
-                        // If adapter already exists, just update data
                         (recyclerView.adapter as MacrosAdapter).updateData(macrosList.toMutableList())
                     }
+
+                    // Calculate and update consumed calories for the selected date
+                    val totalCalories = macrosList.sumOf { it["calories"] as Double }.toFloat()
+                    Log.d("UserDashboard", "Fetched macros for $selectedDate: $totalCalories calories, ${macrosList.size} entries")
+                    updateConsumedCalories(totalCalories)
+
+                    // Fetch steps for the selected date and update burned calories
+                    db.collection("users").document(user.uid)
+                        .collection("steps")
+                        .document(selectedDate)
+                        .get()
+                        .addOnSuccessListener { stepDoc ->
+                            val stepCount = if (stepDoc.exists()) {
+                                stepDoc.getLong("stepCount")?.toInt() ?: 0
+                            } else {
+                                0
+                            }
+                            Log.d("UserDashboard", "Fetched steps for $selectedDate: $stepCount")
+                            calculateBurnedCalories(stepCount, selectedDate)
+
+                            // Fetch water intake for the selected date
+                            db.collection("users").document(user.uid)
+                                .collection("water")
+                                .document(selectedDate)
+                                .get()
+                                .addOnSuccessListener { waterDoc ->
+                                    val waterAmount = if (waterDoc.exists()) {
+                                        waterDoc.getLong("waterAmount")?.toInt() ?: 0
+                                    } else {
+                                        0
+                                    }
+                                    Log.d("UserDashboard", "Fetched water for $selectedDate: $waterAmount ml")
+                                    updateWaterUI(waterAmount)
+                                }
+                                .addOnFailureListener { exception ->
+                                    Log.e("Firebase", "Error fetching water for $selectedDate", exception)
+                                    updateWaterUI(0)
+                                }
+                        }
+                        .addOnFailureListener { exception ->
+                            Log.e("Firebase", "Error fetching steps for $selectedDate", exception)
+                            calculateBurnedCalories(0, selectedDate)
+                            updateWaterUI(0)
+                        }
                 }
                 .addOnFailureListener { exception ->
-                    Log.e("Firebase", "Error fetching macros by date", exception)
+                    Log.e("Firebase", "Error fetching macros for $selectedDate", exception)
+                    updateConsumedCalories(0f)
+                    calculateBurnedCalories(0, selectedDate)
+                    updateWaterUI(0)
                 }
+        } ?: run {
+            Log.e("UserDashboard", "No current user, setting calories, steps, and water to 0")
+            updateConsumedCalories(0f)
+            calculateBurnedCalories(0, selectedDate)
+            updateWaterUI(0)
         }
     }
 
@@ -525,92 +622,88 @@ class UserDashboard : AppCompatActivity() {
     fun updateConsumedCalories(newCalories: Float) {
         val caloriesRemainingText = findViewById<TextView>(R.id.calories_remaining_text)
         val consumedCaloriesValue = findViewById<TextView>(R.id.consumed_calories_value)
+        val baseCalorieGoal = calorie.text.toString().toFloatOrNull() ?: 0f
+        val burnedCaloriesText = burnedCaloriesTextView.text.toString().replace(" kcal", "")
+        val burnedCalories = burnedCaloriesText.toFloatOrNull() ?: 0f
 
-        // Fetch existing calories and update UI once the data is fetched
-        getExistingCalories { existingCalories ->
-            // Add the new calories to the existing total
-            val updatedCaloriesConsumed = existingCalories
+        // Update consumed and remaining calories
+        consumedCaloriesValue.text = String.format("%.0f kcal", newCalories)
+        val updatedCaloriesRemaining = baseCalorieGoal - newCalories + burnedCalories
+        caloriesRemainingText.text = String.format("%.0f kcal", updatedCaloriesRemaining)
 
-            // Get the base calorie goal from the TextView
-            val baseCalorieGoal = calorie.text.toString().toFloat()
-            val burnedCaloriesText = burnedCaloriesTextView.text.toString().replace(" kcal", "")
-            val burnedCalories = burnedCaloriesText.toFloatOrNull() ?: 0f
-            // Calculate remaining calories
-            val updatedCaloriesRemaining = baseCalorieGoal - updatedCaloriesConsumed + burnedCalories
+        // Update progress bar
+        val progressPercentage = calculateProgressPercentage(newCalories, baseCalorieGoal)
+        progressBar.progress = progressPercentage
 
-            // Update the TextViews with the updated values
-            consumedCaloriesValue.text = "$updatedCaloriesConsumed kcal"
-            caloriesRemainingText.text = "$updatedCaloriesRemaining kcal"
-            val progressPercentage = calculateProgressPercentage(updatedCaloriesConsumed, baseCalorieGoal)
+        Log.d("UserDashboard", "Updating consumed: newCalories=$newCalories, baseCalorieGoal=$baseCalorieGoal, burnedCalories=$burnedCalories, remaining=$updatedCaloriesRemaining, progress=$progressPercentage")
 
-            // Update the ProgressBar with the calculated percentage
-            progressBar.progress = progressPercentage
-            // Optionally, update the RecyclerView with the new list of macros
-            fetchAndUpdateMacroList()
+        // Reset progress bar color before checking condition
+        if (newCalories > baseCalorieGoal && baseCalorieGoal > 0) {
+            progressBar.progressTintList = ColorStateList.valueOf(Color.RED)
+            showExceededCaloriesMessage()
         }
     }
-
-    fun getExistingCalories(onComplete: (Float) -> Unit) {
-        var totalCalories = 0f
-
-        // Fetch all macros from Firebase asynchronously
+    private fun showExceededCaloriesMessage() {
+        AlertDialog.Builder(this)
+            .setTitle("⚠️ Calorie Limit Exceeded")
+            .setMessage("You exceeded your daily calorie goal!")
+            .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+            .show()
+    }
+    private fun getExistingCalories(selectedDate: String, onComplete: (Float) -> Unit) {
         currentUser?.let { user ->
             db.collection("users").document(user.uid)
                 .collection("macros")
+                .whereEqualTo("date", selectedDate)
                 .get()
                 .addOnSuccessListener { documents ->
-                    for (document in documents) {
-                        val protein = document.getDouble("protein")?.toFloat() ?: 0f
-                        val carbs = document.getDouble("carbs")?.toFloat() ?: 0f
-                        val fats = document.getDouble("fats")?.toFloat() ?: 0f
-
-                        // Calculate calories from protein, carbs, and fats
-                        totalCalories += (protein * 4) + (carbs * 4) + (fats * 9)
-                    }
-
-                    // Once the data is fetched, return the totalCalories using the callback
+                    val totalCalories = documents.sumOf { doc ->
+                        (doc.getDouble("calories") ?: 0.0)
+                    }.toFloat()
+                    Log.d("UserDashboard", "Fetched existing calories for $selectedDate: $totalCalories, ${documents.size()} entries")
                     onComplete(totalCalories)
                 }
                 .addOnFailureListener { exception ->
-                    Log.e("Firebase", "Error fetching macros", exception)
-                    onComplete(totalCalories) // In case of failure, return 0 as default
+                    Log.e("Firebase", "Error fetching macros for $selectedDate", exception)
+                    onComplete(0f)
                 }
-        }
+        } ?: onComplete(0f)
     }
 
 
 
-    fun fetchAndUpdateMacroList() {
-        currentUser?.let { user ->
-            db.collection("users").document(user.uid)
-                .collection("macros")
-                .orderBy("timestamp", Query.Direction.DESCENDING)
-                .get()
-                .addOnSuccessListener { documents ->
-                    val macrosList = documents.map { doc ->
-                        val timestamp = doc.getLong("timestamp") ?: System.currentTimeMillis()
-                        mapOf(
-                            "id" to doc.id,
-                            "protein" to (doc.getDouble("protein") ?: 0.0),
-                            "carbs" to (doc.getDouble("carbs") ?: 0.0),
-                            "fats" to (doc.getDouble("fats") ?: 0.0),
-                            "calories" to (doc.getDouble("calories") ?: 0.0),
-                            "date" to (doc.getString("date")
-                                ?: SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(timestamp)))
-                        )
-                    }
-
-                    val recyclerView = findViewById<RecyclerView>(R.id.macros_list)
-                    recyclerView.layoutManager = LinearLayoutManager(this)
-                    recyclerView.adapter = MacrosAdapter(macrosList.toMutableList()) { docId, position ->
-                        deleteMacro(docId, position)
-                    }
-                }
-                .addOnFailureListener { exception ->
-                    Log.e("Firebase", "Error fetching macros", exception)
-                }
-        }
-    }
+    //    fun fetchAndUpdateMacroList(selectedDate: String = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())) {
+//        currentUser?.let { user ->
+//            db.collection("users").document(user.uid)
+//                .collection("macros")
+//                .whereEqualTo("date", selectedDate) // Filter by selected date
+//                .orderBy("timestamp", Query.Direction.DESCENDING)
+//                .get()
+//                .addOnSuccessListener { documents ->
+//                    val macrosList = documents.map { doc ->
+//                        val timestamp = doc.getLong("timestamp") ?: System.currentTimeMillis()
+//                        mapOf(
+//                            "id" to doc.id,
+//                            "protein" to (doc.getDouble("protein") ?: 0.0),
+//                            "carbs" to (doc.getDouble("carbs") ?: 0.0),
+//                            "fats" to (doc.getDouble("fats") ?: 0.0),
+//                            "calories" to (doc.getDouble("calories") ?: 0.0),
+//                            "date" to (doc.getString("date")
+//                                ?: SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(timestamp)))
+//                        )
+//                    }
+//
+//                    val recyclerView = findViewById<RecyclerView>(R.id.macros_list)
+//                    recyclerView.layoutManager = LinearLayoutManager(this)
+//                    recyclerView.adapter = MacrosAdapter(macrosList.toMutableList()) { docId, position ->
+//                        deleteMacro(docId, position)
+//                    }
+//                }
+//                .addOnFailureListener { exception ->
+//                    Log.e("Firebase", "Error fetching macros", exception)
+//                }
+//        }
+//    }
     private fun deleteMacro(docId: String, position: Int) {
         currentUser?.let { user ->
             db.collection("users").document(user.uid)
@@ -619,16 +712,13 @@ class UserDashboard : AppCompatActivity() {
                 .delete()
                 .addOnSuccessListener {
                     Log.d("Firebase", "Macro deleted successfully")
-                    // Remove from adapter
                     val adapter = findViewById<RecyclerView>(R.id.macros_list).adapter as MacrosAdapter
                     adapter.macrosList.removeAt(position)
                     adapter.notifyItemRemoved(position)
 
-                    // Update consumed calories after deletion
-                    fetchAndUpdateMacroList()
-                    getExistingCalories { total ->
-                        updateConsumedCalories(total)
-                    }
+                    // Refresh consumed calories and macro list for the current date
+                    val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                    fetchMacrosByDate(today)
                 }
                 .addOnFailureListener { e ->
                     Log.e("Firebase", "Error deleting macro", e)
@@ -646,41 +736,11 @@ class UserDashboard : AppCompatActivity() {
 
 
 
-    private fun fetchMacros() {
-        val userId = currentUser?.uid ?: return
-
-        db.collection("users").document(userId)
-            .collection("macros")
-            .get()
-            .addOnSuccessListener { documents ->
-                var totalProtein = 0
-                var totalCarbs = 0
-                var totalFats = 0
-
-                for (document in documents) {
-                    totalProtein += document.getLong("protein")?.toInt() ?: 0
-                    totalCarbs += document.getLong("carbs")?.toInt() ?: 0
-                    totalFats += document.getLong("fats")?.toInt() ?: 0
-                }
-
-                updateDashboardWithMacros(totalProtein, totalCarbs, totalFats)
-
-            }
-            .addOnFailureListener { exception ->
-                Log.e("Firebase", "Error fetching macros", exception)
-            }
-    }
     override fun onBackPressed() {
         // Prevent going back to login
         moveTaskToBack(true) // minimizes the app instead of going back
     }
-    fun updateDashboardWithMacros(protein: Int, carbs: Int, fats: Int) {
-        val totalCaloriesFromMacros = (protein * 4) + (carbs * 4) + (fats * 9)
-        val consumedCaloriesValue = findViewById<TextView>(R.id.consumed_calories_value)
 
-        // Update consumed calories on the dashboard
-        consumedCaloriesValue.text = "$totalCaloriesFromMacros kcal"
-    }
 
 
 
@@ -721,15 +781,28 @@ class UserDashboard : AppCompatActivity() {
         }
     }
 
-    fun updateDashboard(baseCalorieGoal: Float) {
-        val caloriesRemaining = baseCalorieGoal  // Assuming the user hasn't consumed any calories yet.
-
-        val caloriesConsumed = 0f  // Placeholder for consumed calories.
-
+    fun updateDashboard(baseCalorieGoal: Float, selectedDate: String = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())) {
         val caloriesRemainingText = findViewById<TextView>(R.id.calories_remaining_text)
         val consumedCaloriesValue = findViewById<TextView>(R.id.consumed_calories_value)
 
-        caloriesRemainingText.text = "$caloriesRemaining kcal"
-        consumedCaloriesValue.text = "$caloriesConsumed kcal"
+        getExistingCalories(selectedDate) { consumedCalories ->
+            val burnedCaloriesText = burnedCaloriesTextView.text.toString().replace(" kcal", "")
+            val burnedCalories = burnedCaloriesText.toFloatOrNull() ?: 0f
+            val caloriesRemaining = baseCalorieGoal - consumedCalories + burnedCalories
+
+            caloriesRemainingText.text = String.format("%.0f kcal", caloriesRemaining)
+            consumedCaloriesValue.text = String.format("%.0f kcal", consumedCalories)
+
+            val progressPercentage = calculateProgressPercentage(consumedCalories, baseCalorieGoal)
+            progressBar.progress = progressPercentage
+
+            Log.d("UserDashboard", "Updating dashboard: baseCalorieGoal=$baseCalorieGoal, consumedCalories=$consumedCalories, burnedCalories=$burnedCalories, remaining=$caloriesRemaining, progress=$progressPercentage, date=$selectedDate")
+
+            // Reset progress bar color
+            if (consumedCalories > baseCalorieGoal && baseCalorieGoal > 0) {
+                progressBar.progressTintList = ColorStateList.valueOf(Color.RED)
+                showExceededCaloriesMessage()
+            }
+        }
     }
 }
