@@ -76,6 +76,7 @@ class UserDashboard : AppCompatActivity() {
     private lateinit var burnedCaloriesTextView: TextView
     private lateinit var burnedCaloriesSection: LinearLayout
     private var exceededPopupShown = false
+    private var exceededWaterPopupShown = false
     private var userWeight: Double = 0.0
     private var isMetric: Boolean = true
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -225,6 +226,7 @@ class UserDashboard : AppCompatActivity() {
 
             // Fetch macros for this date
             fetchMacrosByDate(selectedDate)
+            
         }
 
         lifecycleScope.launch {
@@ -372,7 +374,14 @@ class UserDashboard : AppCompatActivity() {
         waterText.text = "$water / 3000 ml"
         Log.d("UserDashboard", "Updated water UI: $water ml")
         if (water >= progressBar.max) {
-            showCongratulationsDialog()
+            if(!exceededWaterPopupShown)
+            {
+                exceededWaterPopupShown=true
+                showCongratulationsDialog()
+            }
+        }
+        else {
+            exceededWaterPopupShown=false
         }
     }
     private fun showCongratulationsDialog() {
@@ -669,8 +678,9 @@ class UserDashboard : AppCompatActivity() {
                 exceededPopupShown = true
                 showExceededCaloriesMessage()
             }
-            else{ exceededPopupShown=false}
+
         }
+        else{ exceededPopupShown=false}
 
 
     }
