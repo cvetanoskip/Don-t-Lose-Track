@@ -4,6 +4,7 @@
     package="com.example.caloriecounter">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
 
     <application
@@ -30,6 +31,11 @@
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:windowSoftInputMode="adjustPan"
             android:exported="false" />
+        <activity android:name=".User.ProgressActivity"
+            android:theme="@style/Theme.CalorieCounter"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:windowSoftInputMode="adjustPan"
+            android:exported="false"/>
         <activity android:name=".User.MenuActivity"
             android:theme="@style/Theme.CalorieCounter"
             android:configChanges="orientation|screenSize|keyboardHidden"

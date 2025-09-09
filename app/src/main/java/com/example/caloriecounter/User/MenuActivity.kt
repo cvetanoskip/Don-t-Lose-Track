@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.CalendarView
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ProgressBar
@@ -43,10 +44,19 @@ class MenuActivity : AppCompatActivity() {
     private lateinit var carbProgressLabel: TextView
     private lateinit var fatProgressLabel: TextView
     private lateinit var ratingTextView: TextView
+    private lateinit var calendarView: CalendarView
+    private var selectedDate: String = ""
+
     private val db = FirebaseFirestore.getInstance()
     private lateinit var userId: String // Current user's ID
     private var calorieGoal: Int = 0
     override fun onCreate(savedInstanceState: Bundle?) {
+        val todayDate = java.util.Calendar.getInstance().let { cal ->
+            String.format("%04d-%02d-%02d", cal.get(java.util.Calendar.YEAR),
+                cal.get(java.util.Calendar.MONTH) + 1,
+                cal.get(java.util.Calendar.DAY_OF_MONTH))
+        }
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_menu)  // Replace with the layout for MenuActivity
          backButton = findViewById(R.id.back_button)
@@ -65,7 +75,9 @@ class MenuActivity : AppCompatActivity() {
         caloriesTextView = findViewById(R.id.calories_total)
         fetchCalorieGoal();
         loadRatiosAndCalculateGrams()
-        fetchAndCalculateMacros()
+
+            fetchAndCalculateMacros(todayDate)
+
         setButton = findViewById(R.id.set_button)
         setRatioButton = findViewById(R.id.set_ratio_button)
         proteinProgressBar = findViewById(R.id.proteinProgressBar)
@@ -75,6 +87,15 @@ class MenuActivity : AppCompatActivity() {
         carbProgressLabel = findViewById(R.id.carbProgressLabel)
         fatProgressLabel = findViewById(R.id.fatProgressLabel)
         ratingTextView = findViewById(R.id.ratingTextView)
+        calendarView = findViewById(R.id.calendarView)
+
+// Listen to date changes
+        calendarView.setOnDateChangeListener { view, year, month, dayOfMonth ->
+            // month is 0-based in CalendarView, so add 1
+            selectedDate = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
+            fetchAndCalculateMacros(selectedDate)
+        }
+
 
         setRatioButton.setOnClickListener{
             saveRatiosToFirebase()
@@ -82,6 +103,7 @@ class MenuActivity : AppCompatActivity() {
         setButton.setOnClickListener {
             saveCalorieGoal()  // Call the save function when the "Set" button is clicked
         }
+
         backButton.setOnClickListener {
             // Navigate back to UserDashboardActivity
             val intent = Intent(this, UserDashboard::class.java)
@@ -89,27 +111,35 @@ class MenuActivity : AppCompatActivity() {
             finish()  // Optional: Call finish() if you don't want to keep this activity in the back stack
         }
     }
-    private fun fetchAndCalculateMacros() {
-       // val db = FirebaseFirestore.getInstance()
+    override fun onBackPressed() {
+        val intent = Intent(this, UserDashboard::class.java)
+        startActivity(intent)
+        finish()  // Optional: Call finish() if you don't want to keep this activity in the back stack
+    }
+
+    private fun fetchAndCalculateMacros(selectedDate: String) {
         val userId = firebaseAuth.currentUser?.uid
-        if(userId!=null) {
-            val macrosRef = firestore.collection("users").document(userId).collection("macros")
+        if (userId != null) {
+            val macrosRef = firestore.collection("users")
+                .document(userId)
+                .collection("macros")
+                .whereEqualTo("date", selectedDate) // <-- filter by date
 
             macrosRef.get().addOnSuccessListener { querySnapshot ->
                 var totalProtein = 0.0
                 var totalCarbs = 0.0
                 var totalFats = 0.0
-                var totalCalories=0.0;
-                // Sum up the macros
+                var totalCalories = 0.0
+
                 for (document in querySnapshot) {
                     totalProtein += document.getDouble("protein") ?: 0.0
                     totalCarbs += document.getDouble("carbs") ?: 0.0
                     totalFats += document.getDouble("fats") ?: 0.0
-                    totalCalories+=document.getDouble("calories")?: 0.0
+                    totalCalories += document.getDouble("calories") ?: 0.0
                 }
+
                 updateMacroProgress(totalProtein, totalCarbs, totalFats)
 
-                // Update UI
                 proteinTextView.text = "Total Protein: ${totalProtein.toInt()}g"
                 carbsTextView.text = "Total Carbs: ${totalCarbs.toInt()}g"
                 fatsTextView.text = "Total Fats: ${totalFats.toInt()}g"
@@ -118,11 +148,11 @@ class MenuActivity : AppCompatActivity() {
                 Log.e("FirebaseError", "Error fetching macros: ", exception)
                 Toast.makeText(this, "Error fetching data.", Toast.LENGTH_SHORT).show()
             }
-        }else {
-            // If the user is not authenticated, show an error
+        } else {
             Toast.makeText(this, "User is not authenticated", Toast.LENGTH_SHORT).show()
         }
     }
+
     private fun fetchCalorieGoal() {
         userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
         db.collection("users").document(userId).get()
@@ -130,7 +160,16 @@ class MenuActivity : AppCompatActivity() {
                 if (document != null && document.contains("calorieGoal")) {
                     calorieGoal = document.getLong("calorieGoal")?.toInt() ?: 0
                     calorieGoalInput.hint=calorieGoal.toString();
-                    fetchAndCalculateMacros()
+                    if (selectedDate.isNotEmpty()) {
+                        fetchAndCalculateMacros(selectedDate)
+                    }else {
+                        val todayDate = java.util.Calendar.getInstance().let { cal ->
+                            String.format("%04d-%02d-%02d", cal.get(java.util.Calendar.YEAR),
+                                cal.get(java.util.Calendar.MONTH) + 1,
+                                cal.get(java.util.Calendar.DAY_OF_MONTH))
+                        }
+                        fetchAndCalculateMacros(todayDate)
+                    }
                 } else {
                     Toast.makeText(this, "Calorie goal not found!", Toast.LENGTH_SHORT).show()
                 }

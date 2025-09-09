@@ -18,6 +18,7 @@ import android.widget.CalendarView
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.PopupMenu
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -74,6 +75,7 @@ class UserDashboard : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
     private lateinit var burnedCaloriesTextView: TextView
     private lateinit var burnedCaloriesSection: LinearLayout
+    private var exceededPopupShown = false
     private var userWeight: Double = 0.0
     private var isMetric: Boolean = true
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -118,42 +120,32 @@ class UserDashboard : AppCompatActivity() {
 
 
 
-//        fun fetchAndDisplayUserData(userId: String) {
-//            val docRef = db.collection("users").document(userId)
-//            docRef.get()
-//                .addOnSuccessListener { document ->
-//                    if (document.exists()) {
-//                        val height = document.getString("height")?.toFloat() ?: 0f
-//                        val weight = document.getString("weight")?.toFloat() ?: 0f
-//                        val activity = document.getString("activity") ?: ""
-//                        val goal = document.getString("goal") ?: ""
-//                        val unitPreference = document.getString("unitPreference") ?: "metric"
-//                        val age = document.getString("age")?.toInt() ?: 18
-//                        val gender = document.getString("gender") ?: ""
-//                        val speed = document.getString("speed") ?: ""
-//                        val modified = document.getBoolean("modified") ?: false
-//                        val calorieGoal = document.getDouble("calorieGoal")?.toFloat() ?: 0f
-//                        Log.d("Firestore", "User data successfully added! $height,$weight")
-//                        if(!modified) {
-//
-//                            baseCalorieGoal = calculateBaseCalorieGoal(
-//                                height, weight, activity, goal, unitPreference, age, gender, speed
-//                            )
-//                            updateDashboard(baseCalorieGoal)
-//                        }
-//                        else if(modified)
-//                        {
-//
-//                            updateDashboard(calorieGoal)
-//                        }
-//                    } else {
-//                        Log.w("Firestore", "Document does not exist.")
-//                    }
-//                }
-//                .addOnFailureListener { exception ->
-//                    Log.e("Firestore", "Error fetching user data", exception)
-//                }
-//        }
+        val helloUser = findViewById<TextView>(R.id.hello_user)
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+
+        if (userId != null) {
+            db.collection("users").document(userId).get()
+                .addOnSuccessListener { doc ->
+                    val fullname = doc.getString("fullname") ?: "User"
+                    helloUser.text = "Hello $fullname"
+                }
+        }
+        helloUser.setOnClickListener { view ->
+            val popup = PopupMenu(this, view)
+            popup.menuInflater.inflate(R.menu.user_menu, popup.menu)
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.menu_progress -> {
+                        val intent = Intent(this, ProgressActivity::class.java)
+                        startActivity(intent)
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popup.show()
+        }
+
 
         sessionManager = SessionManager(this)
         val userDetails = sessionManager.getUsersDetailFromSession()
@@ -569,6 +561,7 @@ class UserDashboard : AppCompatActivity() {
                     val macrosList = documents.map { doc ->
                         val timestamp = doc.getLong("timestamp") ?: System.currentTimeMillis()
                         mapOf(
+                            "id" to doc.id,
                             "protein" to (doc.getDouble("protein") ?: 0.0),
                             "carbs" to (doc.getDouble("carbs") ?: 0.0),
                             "fats" to (doc.getDouble("fats") ?: 0.0),
@@ -671,8 +664,15 @@ class UserDashboard : AppCompatActivity() {
         // Reset progress bar color before checking condition
         if (newCalories > baseCalorieGoal && baseCalorieGoal > 0) {
             progressBar.progressTintList = ColorStateList.valueOf(Color.RED)
-            showExceededCaloriesMessage()
+
+            if (!exceededPopupShown) {   // only show once
+                exceededPopupShown = true
+                showExceededCaloriesMessage()
+            }
+            else{ exceededPopupShown=false}
         }
+
+
     }
     private fun showExceededCaloriesMessage() {
         AlertDialog.Builder(this)
@@ -703,38 +703,7 @@ class UserDashboard : AppCompatActivity() {
 
 
 
-    //    fun fetchAndUpdateMacroList(selectedDate: String = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())) {
-//        currentUser?.let { user ->
-//            db.collection("users").document(user.uid)
-//                .collection("macros")
-//                .whereEqualTo("date", selectedDate) // Filter by selected date
-//                .orderBy("timestamp", Query.Direction.DESCENDING)
-//                .get()
-//                .addOnSuccessListener { documents ->
-//                    val macrosList = documents.map { doc ->
-//                        val timestamp = doc.getLong("timestamp") ?: System.currentTimeMillis()
-//                        mapOf(
-//                            "id" to doc.id,
-//                            "protein" to (doc.getDouble("protein") ?: 0.0),
-//                            "carbs" to (doc.getDouble("carbs") ?: 0.0),
-//                            "fats" to (doc.getDouble("fats") ?: 0.0),
-//                            "calories" to (doc.getDouble("calories") ?: 0.0),
-//                            "date" to (doc.getString("date")
-//                                ?: SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(timestamp)))
-//                        )
-//                    }
-//
-//                    val recyclerView = findViewById<RecyclerView>(R.id.macros_list)
-//                    recyclerView.layoutManager = LinearLayoutManager(this)
-//                    recyclerView.adapter = MacrosAdapter(macrosList.toMutableList()) { docId, position ->
-//                        deleteMacro(docId, position)
-//                    }
-//                }
-//                .addOnFailureListener { exception ->
-//                    Log.e("Firebase", "Error fetching macros", exception)
-//                }
-//        }
-//    }
+
     private fun deleteMacro(docId: String, position: Int) {
         currentUser?.let { user ->
             db.collection("users").document(user.uid)
@@ -830,10 +799,19 @@ class UserDashboard : AppCompatActivity() {
             Log.d("UserDashboard", "Updating dashboard: baseCalorieGoal=$baseCalorieGoal, consumedCalories=$consumedCalories, burnedCalories=$burnedCalories, remaining=$caloriesRemaining, progress=$progressPercentage, date=$selectedDate")
 
             // Reset progress bar color
+//            if (consumedCalories > baseCalorieGoal && baseCalorieGoal > 0) {
+//                progressBar.progressTintList = ColorStateList.valueOf(Color.RED)
+//                showExceededCaloriesMessage()
+//            }
             if (consumedCalories > baseCalorieGoal && baseCalorieGoal > 0) {
                 progressBar.progressTintList = ColorStateList.valueOf(Color.RED)
-                showExceededCaloriesMessage()
+
+                if (!exceededPopupShown) {   // only show once
+                    exceededPopupShown = true
+                    showExceededCaloriesMessage()
+                }
             }
+            else{ exceededPopupShown=false}
         }
     }
 }

@@ -312,6 +312,20 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/fats_total" />
 
+        <CalendarView
+            android:id="@+id/calendarView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/card_background"
+            android:dateTextAppearance="@style/CalendarDateText"
+            android:weekDayTextAppearance="@style/CalendarWeekDayText"
+            app:layout_constraintTop_toBottomOf="@id/calories_total"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+
         <!-- Daily Rating -->
         <TextView
             android:id="@+id/ratingTextView"
@@ -323,9 +337,11 @@
             android:textColor="#006D77"
             android:textSize="22sp"
             android:textStyle="bold"
+
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/calories_total" />
+            app:layout_constraintTop_toBottomOf="@id/calendarView"
+            />
 
         <!-- Progress Bars -->
         <LinearLayout

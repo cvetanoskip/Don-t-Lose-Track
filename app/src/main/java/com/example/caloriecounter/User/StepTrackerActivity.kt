@@ -227,7 +227,11 @@ class StepTrackerActivity : AppCompatActivity(), SensorEventListener {
                 }
         }
     }
-
+    override fun onBackPressed() {
+        val intent = Intent(this, UserDashboard::class.java)
+        startActivity(intent)
+        finish()  // Optional: Call finish() if you don't want to keep this activity in the back stack
+    }
     private fun saveExerciseToFirebase(type: String, duration: Float, calories: Float) {
         userId?.let {
             val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
