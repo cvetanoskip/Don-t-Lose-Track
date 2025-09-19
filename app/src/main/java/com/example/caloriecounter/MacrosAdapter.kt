@@ -28,24 +28,25 @@ class MacrosAdapter( val macrosList: MutableList<Map<String, Any>>,  val onDelet
     override fun onBindViewHolder(holder: MacroViewHolder, position: Int) {
         val macro = macrosList[position]
 
-        // Get date from document ID (YYYY-MM-DD)
         val date = macro["date"] as? String ?: "Unknown Date"
         val dayOfWeek = try {
             val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            val date = sdf.parse(date)
-            val dayFormat = SimpleDateFormat("EEEE", Locale.getDefault()) // "EEEE" = full day name
-            dayFormat.format(date!!)
+            val dateObj = sdf.parse(date)
+            val dayFormat = SimpleDateFormat("EEEE", Locale.getDefault())
+            dayFormat.format(dateObj!!)
         } catch (e: Exception) {
             "Unknown Day"
         }
-
         holder.dateTextView.text = dayOfWeek
 
-        // Get macros and calories (cast to Double then round)
         val protein = (macro["protein"] as? Double)?.toInt() ?: 0
         val carbs = (macro["carbs"] as? Double)?.toInt() ?: 0
         val fats = (macro["fats"] as? Double)?.toInt() ?: 0
-        val calories = (macro["calories"] as? Double)?.toInt() ?: 0
+        val fiber = (macro["fiber"] as? Double)?.toInt() ?: 0
+
+        // Adjust calories for fiber
+        val adjustedCalories = (protein * 4) + ((carbs - fiber) * 4) + (fiber * 2) + (fats * 9)
+
         val deleteButton: Button = holder.itemView.findViewById(R.id.delete_button)
         val docId = macro["id"] as? String
         if (docId != null) {
@@ -53,11 +54,14 @@ class MacrosAdapter( val macrosList: MutableList<Map<String, Any>>,  val onDelet
                 onDeleteClick(docId, position)
             }
         }
+
         holder.proteinTextView.text = "Protein: ${protein}g"
         holder.carbsTextView.text = "Carbs: ${carbs}g"
         holder.fatsTextView.text = "Fats: ${fats}g"
-        holder.caloriesTextView.text = "Calories: ${calories} kcal"
+        holder.fiberTextView.text = "Fiber: ${fiber}g"
+        holder.caloriesTextView.text = "Calories: ${adjustedCalories} kcal"
     }
+
 
     override fun getItemCount(): Int {
         return macrosList.size
@@ -69,6 +73,7 @@ class MacrosAdapter( val macrosList: MutableList<Map<String, Any>>,  val onDelet
         val carbsTextView: TextView = itemView.findViewById(R.id.carbs_text)
         val fatsTextView: TextView = itemView.findViewById(R.id.fats_text)
         val caloriesTextView: TextView = itemView.findViewById(R.id.calories_text)
+        val fiberTextView: TextView = itemView.findViewById(R.id.fiber_text)
     }
 }
 

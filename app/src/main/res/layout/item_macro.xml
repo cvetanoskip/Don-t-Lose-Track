@@ -42,6 +42,16 @@
             android:fontFamily="@font/roboto"
             android:textColor="@color/white"
             android:layout_marginBottom="8dp" />
+        <TextView
+            android:id="@+id/fiber_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fiber: 0g"
+            android:textSize="16sp"
+            android:fontFamily="@font/roboto"
+            android:textColor="@color/white"
+            android:layout_marginBottom="8dp"/>
+
 
         <TextView
             android:id="@+id/fats_text"

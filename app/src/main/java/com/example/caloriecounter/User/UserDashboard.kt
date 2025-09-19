@@ -265,10 +265,12 @@ class UserDashboard : AppCompatActivity() {
         add.setOnClickListener {
             val dialog = Dialog(this)
             dialog.setContentView(R.layout.dialog_add_macros)
-
+            val width = (resources.displayMetrics.widthPixels * 0.9).toInt()
+            dialog.window?.setLayout(width, WindowManager.LayoutParams.WRAP_CONTENT)
             val proteinInput = dialog.findViewById<EditText>(R.id.protein_input)
             val carbsInput = dialog.findViewById<EditText>(R.id.carbs_input)
             val fatsInput = dialog.findViewById<EditText>(R.id.fats_input)
+            val fiberInput=dialog.findViewById<EditText>(R.id.fiberInput)
             val servingSizeInput = dialog.findViewById<EditText>(R.id.serving_size_input)
             val addMacrosButton = dialog.findViewById<Button>(R.id.btn_add_macros)
 
@@ -279,21 +281,30 @@ class UserDashboard : AppCompatActivity() {
                 val protein = proteinInput.text.toString().toFloatOrNull() ?: 0f
                 val carbs = carbsInput.text.toString().toFloatOrNull() ?: 0f
                 val fats = fatsInput.text.toString().toFloatOrNull() ?: 0f
+                val fiber = fiberInput.text.toString().toFloatOrNull() ?: 0f
                 val servingSize = servingSizeInput.text.toString().toFloatOrNull() ?: 1f
-                // Calculate total calories
+
+                // Adjusted macros with serving size
                 val adjustedProtein = protein * servingSize
                 val adjustedCarbs = carbs * servingSize
                 val adjustedFats = fats * servingSize
+                val adjustedFiber = fiber * servingSize
 
-                // Calculate total calories
-                val totalCalories = (adjustedProtein * 4) + (adjustedCarbs * 4) + (adjustedFats * 9)
+                // Calculate total calories with fiber adjustment
+                val digestibleCarbs = (adjustedCarbs - adjustedFiber).coerceAtLeast(0f) // avoid negative
+                val totalCalories = (adjustedProtein * 4) +
+                        (digestibleCarbs * 4) +
+                        (adjustedFiber * 2) +
+                        (adjustedFats * 9)
 
                 // Save to Firebase
-                addMacrosToFirebase(adjustedProtein, adjustedCarbs, adjustedFats, totalCalories)
+                addMacrosToFirebase(adjustedProtein, adjustedCarbs, adjustedFats, totalCalories, adjustedFiber)
+
                 // Update dashboard with the consumed calories
                 updateConsumedCalories(totalCalories)
                 dialog.dismiss()
             }
+
 
             dialog.show()
         }
@@ -529,7 +540,7 @@ class UserDashboard : AppCompatActivity() {
             }
     }
 
-    fun addMacrosToFirebase(protein: Float, carbs: Float, fats: Float, totalCalories: Float) {
+    fun addMacrosToFirebase(protein: Float, carbs: Float, fats: Float, totalCalories: Float, fiber: Float) {
         val macroId = UUID.randomUUID().toString()
         val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
@@ -537,6 +548,7 @@ class UserDashboard : AppCompatActivity() {
             "protein" to protein,
             "carbs" to carbs,
             "fats" to fats,
+            "fiber" to fiber,
             "calories" to totalCalories,
             "timestamp" to System.currentTimeMillis(),
             "date" to today
@@ -559,6 +571,7 @@ class UserDashboard : AppCompatActivity() {
 
 
 
+
     fun fetchMacrosByDate(selectedDate: String) {
         currentUser?.let { user ->
             Log.d("UserDashboard", "Fetching macros for date: $selectedDate")
@@ -574,6 +587,7 @@ class UserDashboard : AppCompatActivity() {
                             "protein" to (doc.getDouble("protein") ?: 0.0),
                             "carbs" to (doc.getDouble("carbs") ?: 0.0),
                             "fats" to (doc.getDouble("fats") ?: 0.0),
+                            "fiber" to (doc.getDouble("fiber") ?: 0.0),
                             "calories" to (doc.getDouble("calories") ?: 0.0),
                             "timestamp" to (doc.getLong("timestamp") ?: 0L),
                             "date" to (doc.getString("date") ?: SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(timestamp)))
