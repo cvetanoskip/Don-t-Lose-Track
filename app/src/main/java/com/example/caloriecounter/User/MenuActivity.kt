@@ -89,7 +89,7 @@ class MenuActivity : AppCompatActivity() {
         ratingTextView = findViewById(R.id.ratingTextView)
         calendarView = findViewById(R.id.calendarView)
 
-// Listen to date changes
+
         calendarView.setOnDateChangeListener { view, year, month, dayOfMonth ->
             // month is 0-based in CalendarView, so add 1
             selectedDate = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
