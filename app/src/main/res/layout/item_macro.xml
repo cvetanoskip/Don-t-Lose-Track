@@ -23,6 +23,28 @@
             android:textStyle="bold"
             android:textSize="20sp"
             android:paddingBottom="4dp"/>
+
+        <TextView
+            android:id="@+id/meal_type_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="Meal Type"
+            android:textColor="#FFC107"
+            android:fontFamily="@font/roboto"
+            android:textSize="16sp"
+            android:paddingBottom="4dp"/>
+        <TextView
+            android:id="@+id/macro_notes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#FFC107"
+            android:fontFamily="@font/roboto"
+            android:textSize="14sp"
+            android:paddingBottom="4dp"
+            android:layout_marginTop="4dp"
+            android:visibility="gone"/>
+
         <TextView
             android:id="@+id/protein_text"
             android:layout_width="wrap_content"

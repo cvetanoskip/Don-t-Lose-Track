@@ -19,6 +19,13 @@
         <item>Stones</item>
 
     </string-array>
+    <string-array name="meal_types">
+        <item>Select meal type</item>
+        <item>Breakfast</item>
+        <item>Lunch</item>
+        <item>Dinner</item>
+        <item>Snack</item>
+    </string-array>
     <string-array name="exercise_types">
         <item>Running</item>
         <item>Cycling</item>

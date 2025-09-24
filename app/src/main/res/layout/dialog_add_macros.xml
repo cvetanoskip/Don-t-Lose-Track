@@ -85,6 +85,31 @@
         android:layout_marginTop="12dp"
         android:background="@android:drawable/edit_text" />
 
+    <EditText
+        android:id="@+id/notes_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Add a note (optional)"
+        android:padding="8dp"
+        android:background="@android:drawable/edit_text"
+        android:layout_marginTop="8dp"
+        android:textColor="@android:color/black"
+        android:textColorHint="#888888"
+        android:textSize="16sp"
+        android:inputType="textMultiLine"
+        android:minLines="2"/>
+
+    <Spinner
+        android:id="@+id/meal_type_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:entries="@array/meal_types"
+        android:textColor="@color/black"
+        android:fontFamily="@font/roboto"
+        android:textSize="16sp"
+        android:padding="8dp"
+        android:layout_marginTop="12dp"
+        android:background="@android:drawable/edit_text"/>
     <Button
         android:id="@+id/btn_add_macros"
         android:layout_width="match_parent"

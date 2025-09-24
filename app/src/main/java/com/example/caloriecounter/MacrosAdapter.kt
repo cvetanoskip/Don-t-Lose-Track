@@ -43,6 +43,7 @@ class MacrosAdapter( val macrosList: MutableList<Map<String, Any>>,  val onDelet
         val carbs = (macro["carbs"] as? Double)?.toInt() ?: 0
         val fats = (macro["fats"] as? Double)?.toInt() ?: 0
         val fiber = (macro["fiber"] as? Double)?.toInt() ?: 0
+        val mealType = macro["mealType"] as? String ?: "Unspecified"
 
         // Adjust calories for fiber
         val adjustedCalories = (protein * 4) + ((carbs - fiber) * 4) + (fiber * 2) + (fats * 9)
@@ -54,12 +55,19 @@ class MacrosAdapter( val macrosList: MutableList<Map<String, Any>>,  val onDelet
                 onDeleteClick(docId, position)
             }
         }
-
+        val notes = macro["notes"] as? String ?: ""
+        if (notes.isNotBlank()) {
+            holder.notesTextView.text = notes
+            holder.notesTextView.visibility = View.VISIBLE
+        } else {
+            holder.notesTextView.visibility = View.GONE
+        }
         holder.proteinTextView.text = "Protein: ${protein}g"
         holder.carbsTextView.text = "Carbs: ${carbs}g"
         holder.fatsTextView.text = "Fats: ${fats}g"
         holder.fiberTextView.text = "Fiber: ${fiber}g"
         holder.caloriesTextView.text = "Calories: ${adjustedCalories} kcal"
+        holder.mealTypeTextView.text = "Meal: $mealType"
     }
 
 
@@ -74,6 +82,8 @@ class MacrosAdapter( val macrosList: MutableList<Map<String, Any>>,  val onDelet
         val fatsTextView: TextView = itemView.findViewById(R.id.fats_text)
         val caloriesTextView: TextView = itemView.findViewById(R.id.calories_text)
         val fiberTextView: TextView = itemView.findViewById(R.id.fiber_text)
+        val mealTypeTextView: TextView = itemView.findViewById(R.id.meal_type_text)
+        val notesTextView: TextView = itemView.findViewById(R.id.macro_notes)
     }
 }
 

@@ -417,6 +417,7 @@
                 android:max="100"
                 android:progress="0"
                 android:progressTint="#004D73" />
+
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

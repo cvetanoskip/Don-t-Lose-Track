@@ -34,7 +34,33 @@
                 android:clickable="true"
                 android:focusable="true"
                 app:tint="#003554" />
+            <LinearLayout
+                android:id="@+id/streak_counter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="8dp">
 
+                <ImageView
+                    android:id="@+id/streak_icon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_lightning_bolt"
+                    app:tint="#FFD700" /> <!-- gold color for lightning -->
+
+                <TextView
+                    android:id="@+id/streak_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="#003554"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:layout_marginStart="4dp" />
+
+            </LinearLayout>
             <Button
                 android:id="@+id/sign_out_button"
                 android:layout_width="wrap_content"

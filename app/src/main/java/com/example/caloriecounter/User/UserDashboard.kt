@@ -13,6 +13,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.CalendarView
 import android.widget.EditText
@@ -20,6 +22,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.ProgressBar
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -63,6 +66,8 @@ import java.util.UUID
 import androidx.lifecycle.lifecycleScope
 import com.example.caloriecounter.User.PopUps.QuoteProvider
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+
 class UserDashboard : AppCompatActivity() {
     lateinit var add: Button
     lateinit var calorie: TextView
@@ -79,6 +84,8 @@ class UserDashboard : AppCompatActivity() {
     private var exceededWaterPopupShown = false
     private var userWeight: Double = 0.0
     private var isMetric: Boolean = true
+    private var selectedDate: String = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user_dashboard)
@@ -107,7 +114,64 @@ class UserDashboard : AppCompatActivity() {
 
 
         fetchUserData()
+        val streakTextView = findViewById<TextView>(R.id.streak_value)
 
+        // Example: fetch streak from Firebase
+        fun updateStreak(streak: Int) {
+            streakTextView.text = streak.toString()
+        }
+        fun calculateStreak() {
+            val user = currentUser ?: return
+            val today = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                LocalDate.now()
+            } else {
+                TODO("VERSION.SDK_INT < O")
+            }
+
+            db.collection("users").document(user.uid)
+                .collection("macros")
+                .orderBy("date", Query.Direction.DESCENDING)
+                .get()
+                .addOnSuccessListener { documents ->
+                    // Collect unique dates
+                    val dateSet = documents.mapNotNull { it.getString("date") }
+                        .toSet()
+                        .map { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            LocalDate.parse(it)
+                        } else {
+                            TODO("VERSION.SDK_INT < O")
+                        }
+                        }
+                        .sortedDescending()
+
+                    var streak = 0
+                    var currentDay = today
+
+                    for (date in dateSet) {
+                        if (date == currentDay) {
+                            streak++
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                currentDay = currentDay.minusDays(1)
+                            }
+                        } else if (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                date.isBefore(currentDay)
+                            } else {
+                                TODO("VERSION.SDK_INT < O")
+                            }
+                        ) {
+                            // Skip non-consecutive days
+                            break
+                        }
+                    }
+
+                    updateStreak(streak)
+                }
+                .addOnFailureListener {
+                    updateStreak(0)
+                }
+        }
+
+        calculateStreak()
         val today = Calendar.getInstance()
         val todayDate = String.format("%04d-%02d-%02d",
             today.get(Calendar.YEAR),
@@ -115,6 +179,7 @@ class UserDashboard : AppCompatActivity() {
             today.get(Calendar.DAY_OF_MONTH)
         )
         fetchMacrosByDate(todayDate)
+
         findViewById<Button>(R.id.AddWater).setOnClickListener {
             showAddWaterDialog()
         }
@@ -222,7 +287,7 @@ class UserDashboard : AppCompatActivity() {
 
         calendarView.setOnDateChangeListener { view, year, month, dayOfMonth ->
             // Format the date as YYYY-MM-DD
-            val selectedDate = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
+            selectedDate = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
 
             // Fetch macros for this date
             fetchMacrosByDate(selectedDate)
@@ -274,6 +339,28 @@ class UserDashboard : AppCompatActivity() {
             val servingSizeInput = dialog.findViewById<EditText>(R.id.serving_size_input)
             val addMacrosButton = dialog.findViewById<Button>(R.id.btn_add_macros)
 
+            val notesInput = dialog.findViewById<EditText>(R.id.notes_input)
+            val spinner = dialog.findViewById<Spinner>(R.id.meal_type_spinner)
+            val mealTypes = listOf("Select meal type", "Breakfast", "Lunch", "Dinner", "Snack")
+
+            val adapter = ArrayAdapter(this, R.layout.spinner_item_custom, mealTypes)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            spinner.adapter = adapter
+            spinner.setSelection(0) // default hint
+            spinner.setPopupBackgroundResource(R.color.black)
+            var selectedMealType = "Unspecified" // default value
+
+            spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                    selectedMealType = if (position == 0) "Unspecified" else mealTypes[position]
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>) {
+                    selectedMealType = "Unspecified"
+                }
+            }
+
+
 
 
 
@@ -283,7 +370,7 @@ class UserDashboard : AppCompatActivity() {
                 val fats = fatsInput.text.toString().toFloatOrNull() ?: 0f
                 val fiber = fiberInput.text.toString().toFloatOrNull() ?: 0f
                 val servingSize = servingSizeInput.text.toString().toFloatOrNull() ?: 1f
-
+                val notes = notesInput.text.toString().takeIf { it.isNotBlank() } ?: ""
                 // Adjusted macros with serving size
                 val adjustedProtein = protein * servingSize
                 val adjustedCarbs = carbs * servingSize
@@ -298,7 +385,8 @@ class UserDashboard : AppCompatActivity() {
                         (adjustedFats * 9)
 
                 // Save to Firebase
-                addMacrosToFirebase(adjustedProtein, adjustedCarbs, adjustedFats, totalCalories, adjustedFiber)
+
+                addMacrosToFirebase(adjustedProtein, adjustedCarbs, adjustedFats, totalCalories, adjustedFiber,selectedMealType,notes)
 
                 // Update dashboard with the consumed calories
                 updateConsumedCalories(totalCalories)
@@ -540,7 +628,8 @@ class UserDashboard : AppCompatActivity() {
             }
     }
 
-    fun addMacrosToFirebase(protein: Float, carbs: Float, fats: Float, totalCalories: Float, fiber: Float) {
+    fun addMacrosToFirebase(protein: Float, carbs: Float, fats: Float, totalCalories: Float, fiber: Float,
+                            mealType: String,notes: String) {
         val macroId = UUID.randomUUID().toString()
         val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
@@ -551,7 +640,10 @@ class UserDashboard : AppCompatActivity() {
             "fiber" to fiber,
             "calories" to totalCalories,
             "timestamp" to System.currentTimeMillis(),
-            "date" to today
+            "date" to selectedDate,
+            "mealType" to mealType,
+            "notes" to notes
+
         )
 
         currentUser?.let { user ->
@@ -561,7 +653,7 @@ class UserDashboard : AppCompatActivity() {
                 .set(macroData)
                 .addOnSuccessListener {
                     Log.d("Firebase", "Macro data added for $today with ID: $macroId")
-                    fetchMacrosByDate(today) // Refresh the list and calories for today
+                    fetchMacrosByDate(selectedDate) // Refresh the list and calories for today
                 }
                 .addOnFailureListener { exception ->
                     Log.e("Firebase", "Error adding macro data", exception)
@@ -590,6 +682,8 @@ class UserDashboard : AppCompatActivity() {
                             "fiber" to (doc.getDouble("fiber") ?: 0.0),
                             "calories" to (doc.getDouble("calories") ?: 0.0),
                             "timestamp" to (doc.getLong("timestamp") ?: 0L),
+                            "mealType" to (doc.getString("mealType") ?: "Unspecified"),
+                            "notes" to (doc.getString("notes") ?: ""),
                             "date" to (doc.getString("date") ?: SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(timestamp)))
                         )
                     }.sortedBy { it["timestamp"] as Long }
@@ -838,4 +932,5 @@ class UserDashboard : AppCompatActivity() {
             else{ exceededPopupShown=false}
         }
     }
+
 }
